@@ -435,13 +435,14 @@ body::before {
   }
 
   .pocket-player-col {
-    flex: 1;
-    min-height: 0;
+    flex: none;
+    height: 50%;
     overflow: hidden;
   }
 
   .pocket-content-col {
-    flex: 1;
+    flex: none;
+    height: 50%;
     min-height: 0;
     overflow: hidden;
   }
@@ -496,8 +497,8 @@ body::before {
   }
 
   .pocket-player-col {
-    width: 400px;
-    min-width: 400px;
+    width: 50%;
+    min-width: 0;
     max-height: none !important;
     flex: none !important;
     overflow: visible;
@@ -518,7 +519,7 @@ body::before {
   }
 }
 
-/* Tab navigation bar — bottom */
+/* Tab navigation bar — top of content */
 .tab-nav {
   display: flex;
   align-items: center;
@@ -527,7 +528,7 @@ body::before {
   height: 40px;
   padding: 0 8px;
   background: var(--theme-surface);
-  border-top: 1px solid var(--theme-border);
+  border-bottom: 1px solid var(--theme-border);
   flex-shrink: 0;
 }
 .tab-nav-btn {

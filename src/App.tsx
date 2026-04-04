@@ -207,11 +207,11 @@ function App() {
 
             {/* Content below player */}
             <div className="pocket-content-col">
+              <TabNav />
               <div className="pocket-content">
                 {renderView()}
               </div>
               <SharePlaylistButton />
-              <TabNav />
             </div>
           </div>
         </div>
