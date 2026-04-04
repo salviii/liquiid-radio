@@ -9,8 +9,9 @@ import { TabNav } from './components/Layout/Sidebar'
 import { MiniPlayer } from './components/Player/MiniPlayer'
 import { NowPlaying } from './components/Player/NowPlaying'
 import { LibraryView, SharePlaylistButton, decodePlaylist } from './components/Library/LibraryView'
-import { isSoundCloudUrl } from './lib/soundcloud'
-import { isYouTubeUrl } from './lib/youtube'
+import { isSoundCloudUrl, resolveSoundCloudTrack } from './lib/soundcloud'
+import { isYouTubeUrl, resolveYouTubeTrack } from './lib/youtube'
+import { resolveSpotifyTrack } from './lib/spotify'
 import { PlaylistView } from './components/Playlist/PlaylistView'
 import { SourcesView } from './components/Library/SourcesView'
 import { FriendsView } from './components/Library/FriendsView'
@@ -57,17 +58,21 @@ function App() {
     const playlistData = params.get('p')
     if (!playlistData) return
 
-    const tracks = decodePlaylist(playlistData)
-    if (tracks.length === 0) return
+    const decoded = decodePlaylist(playlistData)
+    if (decoded.length === 0) return
 
     const addTrack = usePlayerStore.getState().addTrack
-    for (const t of tracks) {
+    const updateTrack = usePlayerStore.getState().updateTrack
+
+    // Add tracks immediately with basic info
+    const addedIds: string[] = []
+    for (const t of decoded) {
       const sourceType = isSoundCloudUrl(t.url) ? 'soundcloud'
         : isYouTubeUrl(t.url) ? 'youtube'
         : t.url.includes('open.spotify.com') ? 'spotify'
         : 'url'
       const tags = sourceType !== 'url' ? [sourceType] : []
-      addTrack({
+      const track = addTrack({
         title: t.title,
         artist: t.artist,
         album: '',
@@ -77,11 +82,37 @@ function App() {
         sourceType,
         tags,
       })
+      addedIds.push(track.id)
     }
+
+    // Resolve metadata (cover art, better titles) in the background
+    decoded.forEach(async (t, i) => {
+      const trackId = addedIds[i]
+      if (!trackId) return
+      try {
+        let resolved: { title: string; artist: string; thumbnailUrl?: string } | null = null
+        if (t.url.includes('open.spotify.com')) {
+          resolved = await resolveSpotifyTrack(t.url)
+        } else if (isYouTubeUrl(t.url)) {
+          resolved = await resolveYouTubeTrack(t.url)
+        } else if (isSoundCloudUrl(t.url)) {
+          resolved = await resolveSoundCloudTrack(t.url)
+        }
+        if (resolved) {
+          updateTrack(trackId, {
+            title: resolved.title || t.title,
+            artist: resolved.artist || t.artist,
+            coverArt: resolved.thumbnailUrl,
+          })
+        }
+      } catch (err) {
+        console.warn(`[playlist] failed to resolve metadata for ${t.url}`, err)
+      }
+    })
 
     // Clean URL after importing
     window.history.replaceState({}, '', window.location.pathname)
-    console.log(`[playlist] imported ${tracks.length} tracks from shared link`)
+    console.log(`[playlist] imported ${decoded.length} tracks from shared link`)
   }, [])
 
   // Keyboard shortcuts

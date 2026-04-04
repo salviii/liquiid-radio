@@ -10,12 +10,14 @@ import {
 } from '../../lib/spotifyAuth'
 
 const THEMES = [
-  { id: 'default', name: 'Signal', description: 'Warm analog light', icon: Sun, preview: '#F0EDEA' },
-  { id: 'chameleon', name: 'Chameleon', description: 'Light + album art', icon: Sparkles, preview: 'linear-gradient(135deg, #e8a4a4, #a4c8e8, #a4e8b4)' },
-  { id: 'chameleon-dark', name: 'Chameleon Dark', description: 'Dark + album art', icon: Sparkles, preview: 'linear-gradient(135deg, #3a1a1a, #1a2a3a, #1a3a1a)' },
-  { id: 'dark', name: 'Blackout', description: 'Knob-palette dark', icon: Moon, preview: '#1C1A18' },
-  { id: 'midnight', name: 'Midnight', description: 'Deep signal blue', icon: Waves, preview: '#0a0e1a' },
-  { id: 'vinyl', name: 'Vinyl', description: 'Warm tape tones', icon: Disc3, preview: '#1a1410' },
+  { id: 'default', name: 'Paper', description: 'clean white, no color', icon: Sun, preview: '#fafafa' },
+  { id: 'dark', name: 'Terminal', description: 'green on black, crt glow', icon: Moon, preview: '#0a0a0a' },
+  { id: 'midnight', name: 'Bruise', description: 'deep indigo, violet', icon: Waves, preview: '#0c0a14' },
+  { id: 'vinyl', name: 'Rust', description: 'ochre, burnt orange', icon: Disc3, preview: '#1c1510' },
+  { id: 'ocean', name: 'Ocean', description: 'calm blue, airy light', icon: Waves, preview: '#f0f4f8' },
+  { id: 'void', name: 'Void', description: 'pure black, red accent', icon: Moon, preview: '#000000' },
+  { id: 'chameleon', name: 'Chameleon', description: 'light + album art colors', icon: Sparkles, preview: 'linear-gradient(135deg, #e8a4a4, #a4c8e8, #a4e8b4)' },
+  { id: 'chameleon-dark', name: 'Chameleon Dark', description: 'dark + album art colors', icon: Sparkles, preview: 'linear-gradient(135deg, #3a1a1a, #1a2a3a, #1a3a1a)' },
 ]
 
 export function SettingsView() {

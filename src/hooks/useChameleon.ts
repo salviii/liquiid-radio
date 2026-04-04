@@ -80,6 +80,14 @@ export function useChameleon() {
     root.style.setProperty('--theme-accent-dim', primaryPalette.accentDim)
     root.style.setProperty('--theme-player-progress', primaryPalette.accent)
 
+    // Reactive text color for buttons on accent backgrounds
+    const hex = primaryPalette.accent
+    const r = parseInt(hex.slice(1, 3), 16) || 0
+    const g = parseInt(hex.slice(3, 5), 16) || 0
+    const b = parseInt(hex.slice(5, 7), 16) || 0
+    const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+    root.style.setProperty('--theme-accent-text', lum > 0.5 ? '#111111' : '#fafafa')
+
     // Secondary & tertiary accents for immersive use
     root.style.setProperty('--theme-accent-secondary', secondaryPalette.accent)
     root.style.setProperty('--theme-accent-tertiary', tertiaryPalette.accent)
