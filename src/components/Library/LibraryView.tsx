@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { usePlayerStore } from '../../store/playerStore'
 import { TrackList } from './TrackList'
 import { AddTrackModal } from './AddTrackModal'
-import { Plus, Search, LayoutGrid, List, Music, Share2 } from 'lucide-react'
+import { Plus, LayoutGrid, List, Music, Share2 } from 'lucide-react'
 import { isSpotifyConnected, searchSpotify, getUserSavedTracks } from '../../lib/spotifyAuth'
 import type { SpotifySearchResult } from '../../lib/spotifyAuth'
 
@@ -11,7 +11,7 @@ export function LibraryView() {
   const addTrack = usePlayerStore((s) => s.addTrack)
   const [showAddModal, setShowAddModal] = useState(false)
   const [search, setSearch] = useState('')
-  const [sortBy, setSortBy] = useState<'added' | 'title' | 'artist'>('added')
+  const [sortBy] = useState<'added' | 'title' | 'artist'>('added')
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [shareCopied, setShareCopied] = useState(false)
 
@@ -63,7 +63,7 @@ export function LibraryView() {
   }, [searchMode])
 
   // Handle search input
-  function handleSearch(val: string) {
+  function _handleSearch(val: string) {
     setSearch(val)
     if (searchMode === 'spotify' && spotifyConnected) {
       doSpotifySearch(val)
