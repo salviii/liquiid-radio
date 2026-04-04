@@ -1,18 +1,10 @@
-import { useRef, useCallback, useState, useSyncExternalStore } from 'react'
+import { useRef, useCallback, useState } from 'react'
 import { usePlayerStore } from '../../store/playerStore'
 import { formatTime } from '../../lib/utils'
 import {
   Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1,
   X, LogIn, ExternalLink, SlidersHorizontal, ListMusic,
 } from 'lucide-react'
-
-const mobileQuery = typeof window !== 'undefined' ? window.matchMedia('(max-width: 600px)') : null
-function useIsMobile() {
-  return useSyncExternalStore(
-    (cb) => { mobileQuery?.addEventListener('change', cb); return () => mobileQuery?.removeEventListener('change', cb) },
-    () => mobileQuery?.matches ?? false,
-  )
-}
 
 interface NowPlayingProps {
   onSeek: (time: number) => void
@@ -75,8 +67,6 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
 
   // Check if we're already in widget mode
   const isWidget = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('widget')
-  const isMobile = useIsMobile()
-
   // No mobile-specific layout — use the same full player everywhere
   return (
     <div className="now-playing-wrapper" style={{
@@ -472,44 +462,6 @@ function MiniDisc({ cover, isPlaying, isWidget }: { cover?: string; isPlaying: b
           boxShadow: 'inset 0 0 6px rgba(0,0,0,0.06)',
         }} />
       </div>
-    </div>
-  )
-}
-
-// Compact spinning disc for mobile bar
-function MiniDiscCompact({ cover, isPlaying }: { cover?: string; isPlaying: boolean }) {
-  return (
-    <div
-      className={isPlaying ? 'animate-[spin_3s_linear_infinite]' : ''}
-      style={{
-        width: '100%',
-        height: '100%',
-        borderRadius: '50%',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      <div style={{
-        position: 'absolute', inset: 0, borderRadius: '50%',
-        background: cover
-          ? `url(${cover}) center/cover`
-          : 'conic-gradient(from 30deg, #e8a0c0, #c0a0e8, #a0c8e8, #a0e8c0, #e8d0a0, #e8a0a0, #e8a0c0)',
-      }} />
-      <div style={{
-        position: 'absolute', inset: 0, borderRadius: '50%',
-        background: 'conic-gradient(from 0deg, rgba(255,100,150,0.15), rgba(150,100,255,0.15), rgba(100,200,255,0.15), rgba(100,255,150,0.15), rgba(255,220,100,0.15), rgba(255,100,150,0.15))',
-        mixBlendMode: 'screen',
-      }} />
-      <div style={{
-        position: 'absolute', top: '50%', left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 4, height: 4, borderRadius: '50%',
-        background: 'rgba(255,255,255,0.4)',
-      }} />
-      <div style={{
-        position: 'absolute', inset: 0, borderRadius: '50%',
-        border: '1px solid rgba(0,0,0,0.12)',
-      }} />
     </div>
   )
 }
