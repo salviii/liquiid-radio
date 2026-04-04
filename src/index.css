@@ -492,7 +492,7 @@ body::before {
   z-index: 1;
 }
 
-/* Mobile */
+/* Mobile — single scrollable column, same player as desktop */
 @media (max-width: 600px) {
   .pocket-shell {
     max-width: 100%;
@@ -504,16 +504,23 @@ body::before {
     box-shadow: none;
   }
 
+  .pocket-body {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
   .pocket-player-col {
     flex: none;
-    height: auto;
+    height: 50svh;
+    min-height: 280px;
+    max-height: 400px;
     overflow: hidden;
   }
 
   .pocket-content-col {
     flex: 1;
-    min-height: 0;
-    overflow: hidden;
+    min-height: 50svh;
+    overflow: visible;
   }
 
   .pocket-content-col .pocket-content {
@@ -524,6 +531,21 @@ body::before {
 
   .tab-nav {
     padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Bigger text on mobile for legibility */
+  .marquee-text {
+    font-size: 11px;
+  }
+  .knob-label {
+    font-size: 10px;
+  }
+  .btn-accent {
+    font-size: 11px;
+    padding: 6px 14px;
+  }
+  .btn-outline {
+    font-size: 11px;
   }
 }
 

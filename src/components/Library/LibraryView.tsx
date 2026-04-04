@@ -6,7 +6,6 @@ import { Plus, LayoutGrid, List, Share2 } from 'lucide-react'
 
 export function LibraryView() {
   const tracks = usePlayerStore((s) => s.tracks)
-  const addTrack = usePlayerStore((s) => s.addTrack)
   const [showAddModal, setShowAddModal] = useState(false)
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [shareCopied, setShareCopied] = useState(false)
