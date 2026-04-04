@@ -426,7 +426,7 @@ body::before {
   z-index: 1;
 }
 
-/* Mobile: fit within safe area, account for Safari bottom bar */
+/* Mobile */
 @media (max-width: 600px) {
   .pocket-shell {
     max-width: 92%;
@@ -438,70 +438,19 @@ body::before {
     box-shadow: 0 8px 40px rgba(0,0,0,0.18);
   }
 
-  .pocket-body {
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  /* Default: player fills available space, tab nav always visible */
   .pocket-player-col {
-    flex: 1;
-    max-height: none;
-    overflow: auto;
-    transition: flex 0.3s ease, max-height 0.3s ease;
+    flex-shrink: 0;
+    max-height: 45svh;
+    overflow: hidden;
   }
 
-  /* Content col just shows the tab nav by default */
   .pocket-content-col {
-    flex: 0 0 auto;
-    min-height: 0;
-    overflow: hidden;
-    transition: flex 0.3s ease;
-  }
-
-  /* Hide content area but keep tab nav visible */
-  .pocket-content-col .pocket-content {
-    display: none;
-  }
-  .pocket-content-col .panel-close-btn {
-    display: none;
-  }
-
-  /* When panel is open: player hides, content fills */
-  .pocket-player-col.panel-open {
-    flex: 0;
-    max-height: 0;
-    overflow: hidden;
-  }
-
-  .pocket-content-col.panel-open {
     flex: 1;
     min-height: 0;
-    overflow: hidden;
-  }
-
-  .pocket-content-col.panel-open .pocket-content {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow-y: auto;
-    min-height: 0;
-  }
-
-  .pocket-content-col.panel-open .panel-close-btn {
-    display: flex !important;
   }
 
   .tab-nav {
     padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-}
-
-/* Desktop: hide close button */
-@media (min-width: 601px) {
-  .panel-close-btn {
-    display: none !important;
   }
 }
 

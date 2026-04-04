@@ -8,7 +8,7 @@ import { useChameleon } from './hooks/useChameleon'
 import { TabNav } from './components/Layout/Sidebar'
 import { MiniPlayer } from './components/Player/MiniPlayer'
 import { NowPlaying } from './components/Player/NowPlaying'
-import { LibraryView } from './components/Library/LibraryView'
+import { LibraryView, SharePlaylistButton } from './components/Library/LibraryView'
 import { PlaylistView } from './components/Playlist/PlaylistView'
 import { SourcesView } from './components/Library/SourcesView'
 import { FriendsView } from './components/Library/FriendsView'
@@ -115,7 +115,7 @@ function App() {
           background: 'var(--theme-bg-secondary)',
           position: 'fixed',
           inset: 0,
-          padding: '4%',
+          padding: '2%',
         }}
       >
         {/* Blurred album art background — 18% opacity */}
@@ -175,6 +175,7 @@ function App() {
               <div className="pocket-content">
                 {renderView()}
               </div>
+              <SharePlaylistButton />
               <TabNav />
             </div>
           </div>

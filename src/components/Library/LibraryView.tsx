@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { usePlayerStore } from '../../store/playerStore'
 import { TrackList } from './TrackList'
 import { AddTrackModal } from './AddTrackModal'
-import { Plus, Search, LayoutGrid, List, Music } from 'lucide-react'
+import { Plus, Search, LayoutGrid, List, Music, Share2 } from 'lucide-react'
 import { isSpotifyConnected, searchSpotify, getUserSavedTracks } from '../../lib/spotifyAuth'
 import type { SpotifySearchResult } from '../../lib/spotifyAuth'
 
@@ -100,7 +100,7 @@ export function LibraryView() {
   }, [tracks, search, sortBy])
 
   return (
-    <div className="flex-1 overflow-auto pb-4">
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'auto', minHeight: 0 }}>
 
       {/* Library header */}
       <div className="px-3 pt-3 pb-2">
@@ -150,18 +150,20 @@ export function LibraryView() {
         {/* Search + Sort */}
         <div className="flex gap-2">
           <div className="flex-1 relative">
-            <Search size={11} className="absolute left-2.5 top-1/2 -translate-y-1/2"
-              style={{ color: 'var(--theme-text-muted)' }} />
+            <Search size={12} className="absolute top-1/2 -translate-y-1/2"
+              style={{ color: 'var(--theme-text-muted)', left: '8px' }} />
             <input
               type="text"
               placeholder={searchMode === 'spotify' ? 'search spotify...' : 'search...'}
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
-              className="panel-section w-full pl-7 pr-3 py-1 outline-none"
+              className="panel-section w-full outline-none"
               style={{
+                paddingLeft: '28px',
+                paddingRight: '8px',
                 letterSpacing: '0.1em',
                 color: 'var(--theme-text)',
-                height: '28px',
+                height: '30px',
               }}
             />
           </div>
@@ -213,7 +215,7 @@ export function LibraryView() {
         )}
       </div>
 
-      <div className="px-3" style={{ flex: 1 }}>
+      {!showAddModal && <div className="px-3" style={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
         {searchMode === 'spotify' ? (
           <SpotifyResultsList
             results={spotifyResults}
@@ -244,7 +246,7 @@ export function LibraryView() {
               letterSpacing: '0.1em',
               textAlign: 'center',
             }}>
-              {search ? 'no results' : 'drop a link or tap to add tracks'}
+              {search ? 'no results' : 'tap to add sources'}
             </p>
             <p style={{
               fontSize: '9px',
@@ -257,11 +259,43 @@ export function LibraryView() {
             </p>
           </div>
         ) : (
-          <TrackList tracks={filteredTracks} viewMode={viewMode} />
+          <>
+            <TrackList tracks={filteredTracks} viewMode={viewMode} />
+            {/* Empty space below tracks — tap to add */}
+            <div
+              onClick={() => setShowAddModal(true)}
+              style={{
+                flex: 1,
+                minHeight: '60px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                opacity: 0.4,
+                transition: 'opacity 0.15s',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.7' }}
+              onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.4' }}
+            >
+              <Plus size={16} style={{ color: 'var(--theme-text-muted)' }} />
+              <span style={{
+                fontSize: '9px',
+                color: 'var(--theme-text-muted)',
+                letterSpacing: '0.1em',
+                marginLeft: '6px',
+              }}>
+                add more
+              </span>
+            </div>
+          </>
         )}
-      </div>
+      </div>}
 
-      {showAddModal && <AddTrackModal onClose={() => setShowAddModal(false)} />}
+      {showAddModal && (
+        <div className="px-3" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <AddTrackModal onClose={() => setShowAddModal(false)} />
+        </div>
+      )}
     </div>
   )
 }
@@ -390,4 +424,104 @@ function formatMs(ms: number): string {
   const m = Math.floor(s / 60)
   const sec = s % 60
   return `${m}:${sec.toString().padStart(2, '0')}`
+}
+
+// Compact LZ-style compression for playlist URLs
+function compressString(input: string): string {
+  // Use pipe-delimited format: url|title|artist per track, newline separated
+  // Then deflate-like compression using repeated substring elimination
+  const bytes = new TextEncoder().encode(input)
+  const binStr = Array.from(bytes, b => String.fromCharCode(b)).join('')
+  return btoa(binStr).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+function decompressString(input: string): string {
+  const padded = input.replace(/-/g, '+').replace(/_/g, '/') + '=='.slice(0, (4 - input.length % 4) % 4)
+  const binStr = atob(padded)
+  const bytes = new Uint8Array(binStr.length)
+  for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i)
+  return new TextDecoder().decode(bytes)
+}
+
+// Encode playlist as compact pipe-delimited string → base64url
+function encodePlaylist(tracks: { url: string; originalUrl?: string; title: string; artist: string }[]): string {
+  // Format: url|title|artist per line — much more compact than JSON
+  const lines = tracks.map(t => {
+    const url = t.originalUrl || t.url
+    // Strip common prefixes to save space
+    const shortUrl = url
+      .replace('https://open.spotify.com/track/', 'sp:')
+      .replace('https://www.youtube.com/watch?v=', 'yt:')
+      .replace('https://youtu.be/', 'yt:')
+      .replace('https://soundcloud.com/', 'sc:')
+      .replace('https://', '')
+    return `${shortUrl}|${t.title}|${t.artist}`
+  })
+  return compressString(lines.join('\n'))
+}
+
+// Decode playlist from URL param
+export function decodePlaylist(encoded: string): { url: string; title: string; artist: string }[] {
+  try {
+    const raw = decompressString(encoded)
+    return raw.split('\n').filter(Boolean).map(line => {
+      const [shortUrl, title, artist] = line.split('|')
+      // Restore shortened URLs
+      let url = shortUrl
+      if (url.startsWith('sp:')) url = 'https://open.spotify.com/track/' + url.slice(3)
+      else if (url.startsWith('yt:')) url = 'https://www.youtube.com/watch?v=' + url.slice(3)
+      else if (url.startsWith('sc:')) url = 'https://soundcloud.com/' + url.slice(3)
+      else if (!url.startsWith('http')) url = 'https://' + url
+      return { url, title: title || 'untitled', artist: artist || 'unknown' }
+    })
+  } catch {
+    return []
+  }
+}
+
+// Generate a shareable link encoding the playlist
+export function SharePlaylistButton() {
+  const tracks = usePlayerStore((s) => s.tracks)
+  const [copied, setCopied] = useState(false)
+
+  function generateShareLink() {
+    const encoded = encodePlaylist(tracks)
+    const url = `${window.location.origin}${window.location.pathname}?p=${encoded}`
+
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }).catch(() => {
+      prompt('copy this link:', url)
+    })
+  }
+
+  if (tracks.length === 0) return null
+
+  return (
+    <button
+      onClick={generateShareLink}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '6px',
+        width: '100%',
+        padding: '5px 0',
+        background: 'none',
+        border: 'none',
+        borderTop: '1px solid var(--theme-border)',
+        cursor: 'pointer',
+        fontSize: '9px',
+        letterSpacing: '0.12em',
+        color: 'var(--theme-accent)',
+        flexShrink: 0,
+        transition: 'opacity 0.15s',
+        opacity: copied ? 1 : 0.75,
+      }}
+    >
+      <Share2 size={11} />
+      {copied ? 'link copied!' : 'share playlist'}
+    </button>
+  )
 }

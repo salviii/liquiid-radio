@@ -5,15 +5,15 @@ import { isSoundCloudUrl, resolveSoundCloudTrack } from '../../lib/soundcloud'
 import { isYouTubeUrl, resolveYouTubeTrack } from '../../lib/youtube'
 import { isSpotifyUrl, resolveSpotifyTrack } from '../../lib/spotify'
 import { isGDriveUrl, resolveGDriveFile, isGDriveFolderUrl } from '../../lib/gdrive'
-import { X, Link, Plus, AlertCircle, FolderOpen, Music } from 'lucide-react'
+import { Link, Plus, AlertCircle, FolderOpen, Music, X } from 'lucide-react'
 
-interface AddTrackModalProps {
+interface AddTrackPanelProps {
   onClose: () => void
 }
 
 type TabMode = 'url' | 'local'
 
-export function AddTrackModal({ onClose }: AddTrackModalProps) {
+export function AddTrackModal({ onClose }: AddTrackPanelProps) {
   const [tab, setTab] = useState<TabMode>('url')
   const [urls, setUrls] = useState('')
   const [error, setError] = useState('')
@@ -31,7 +31,7 @@ export function AddTrackModal({ onClose }: AddTrackModalProps) {
       .filter(Boolean)
 
     if (lines.length === 0) {
-      setError('Paste at least one audio URL')
+      setError('paste at least one audio url')
       return
     }
 
@@ -45,7 +45,7 @@ export function AddTrackModal({ onClose }: AddTrackModalProps) {
     })
 
     if (invalid.length > 0) {
-      setError(`Invalid URL(s): ${invalid[0]}`)
+      setError(`invalid url: ${invalid[0]}`)
       return
     }
 
@@ -127,7 +127,7 @@ export function AddTrackModal({ onClose }: AddTrackModalProps) {
         })
       } else if (isGDriveUrl(url)) {
         if (isGDriveFolderUrl(url)) {
-          setError('Google Drive folders aren\'t supported yet — paste individual file links')
+          setError('google drive folders not supported — paste individual file links')
           return
         }
         const resolved = resolveGDriveFile(url)
@@ -143,7 +143,7 @@ export function AddTrackModal({ onClose }: AddTrackModalProps) {
             tags: ['gdrive'],
           })
         } else {
-          setError(`Could not parse Google Drive link: ${url}`)
+          setError(`could not parse google drive link`)
           return
         }
       } else {
@@ -161,6 +161,7 @@ export function AddTrackModal({ onClose }: AddTrackModalProps) {
       }
     }
 
+    setUrls('')
     onClose()
   }
 
@@ -172,7 +173,7 @@ export function AddTrackModal({ onClose }: AddTrackModalProps) {
 
   function handleLocalSubmit() {
     if (localFiles.length === 0) {
-      setError('Select at least one audio file')
+      setError('select at least one audio file')
       return
     }
 
@@ -190,6 +191,7 @@ export function AddTrackModal({ onClose }: AddTrackModalProps) {
       })
     }
 
+    setLocalFiles([])
     onClose()
   }
 
@@ -208,212 +210,263 @@ export function AddTrackModal({ onClose }: AddTrackModalProps) {
     }
   }
 
-  const monoStyle = {
-    fontFamily: 'var(--font-mono)',
-    fontSize: '10px',
-    letterSpacing: '0.15em',
-    
-  }
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.5)' }}
-      onClick={onClose}
+    <div
+      style={{ padding: '8px 0', flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}
       onDragOver={(e) => e.preventDefault()}
-      onDrop={handleDrop}>
-      <div
-        className="panel w-full max-w-lg p-6"
-        style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-5">
-          <h2
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '14px',
-              fontWeight: 700,
-              letterSpacing: '0.15em',
-              
-              color: 'var(--theme-text)',
-            }}
-          >
-            Add Audio
-          </h2>
-          <button
-            onClick={onClose}
-            className="btn-ghost"
-            style={{ padding: '4px', color: 'var(--theme-text-muted)' }}
-          >
-            <X size={18} />
-          </button>
-        </div>
+      onDrop={handleDrop}
+    >
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+        <button
+          onClick={() => { setTab('url'); setError('') }}
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '4px',
+            padding: '5px 8px',
+            fontSize: '9px',
+            letterSpacing: '0.1em',
+            border: tab === 'url' ? 'none' : '1px solid var(--theme-border-panel)',
+            borderRadius: '3px',
+            background: tab === 'url' ? 'var(--theme-accent)' : 'transparent',
+            color: tab === 'url' ? '#0a0a0a' : 'var(--theme-text-secondary)',
+            cursor: 'pointer',
+          }}
+        >
+          <Link size={10} /> paste urls
+        </button>
+        <button
+          onClick={() => { setTab('local'); setError('') }}
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '4px',
+            padding: '5px 8px',
+            fontSize: '9px',
+            letterSpacing: '0.1em',
+            border: tab === 'local' ? 'none' : '1px solid var(--theme-border-panel)',
+            borderRadius: '3px',
+            background: tab === 'local' ? 'var(--theme-accent)' : 'transparent',
+            color: tab === 'local' ? '#0a0a0a' : 'var(--theme-text-secondary)',
+            cursor: 'pointer',
+          }}
+        >
+          <FolderOpen size={10} /> local files
+        </button>
+      </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-5">
-          <button
-            onClick={() => { setTab('url'); setError('') }}
-            className={tab === 'url' ? 'btn-accent' : 'btn-outline'}
-            style={{
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              padding: '8px 12px',
-            }}
-          >
-            <Link size={13} /> PASTE URLS
-          </button>
-          <button
-            onClick={() => { setTab('local'); setError('') }}
-            className={tab === 'local' ? 'btn-accent' : 'btn-outline'}
-            style={{
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              padding: '8px 12px',
-            }}
-          >
-            <FolderOpen size={13} /> LOCAL FILES
-          </button>
-        </div>
-
-        {/* URL Tab */}
-        {tab === 'url' && (
-          <form onSubmit={handleUrlSubmit}>
-            <p className="mb-3" style={{ ...monoStyle, color: 'var(--theme-text-secondary)' }}>
-              Paste links to audio files, YouTube, SoundCloud, or Spotify tracks. One URL per line.
-            </p>
-            <div className="relative mb-3">
-              <Link size={14} className="absolute left-3 top-3" style={{ color: 'var(--theme-text-muted)' }} />
-              <textarea
-                value={urls}
-                onChange={(e) => setUrls(e.target.value)}
-                placeholder={"https://youtube.com/watch?v=...\nhttps://soundcloud.com/artist/track\nhttps://open.spotify.com/track/...\nhttps://drive.google.com/file/d/.../view\nhttps://example.com/song.mp3"}
-                rows={5}
-                className="panel-section w-full px-3 py-2.5 pl-10 resize-none outline-none"
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '11px',
-                  letterSpacing: '0.05em',
-                  color: 'var(--theme-text)',
-                }}
-                onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--theme-accent)')}
-                onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--theme-border-panel)')}
-                autoFocus
-              />
-            </div>
-
-            {error && (
-              <div className="flex items-center gap-2 mb-3" style={{ ...monoStyle, color: 'var(--color-error)' }}>
-                <AlertCircle size={13} /> {error}
-              </div>
-            )}
-
-            <div className="flex gap-2 justify-end">
-              <button type="button" onClick={onClose} className="btn-outline" style={{ padding: '8px 16px' }}>
-                CANCEL
-              </button>
-              <button type="submit" className="btn-accent flex items-center gap-2" style={{ padding: '8px 16px' }}>
-                <Plus size={14} /> ADD TRACKS
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* Local Files Tab */}
-        {tab === 'local' && (
-          <div>
-            <p className="mb-3" style={{ ...monoStyle, color: 'var(--theme-text-secondary)' }}>
-              Select audio files from your device, or drag and drop them here.
-            </p>
-
-            {/* Drop zone / file picker */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="audio/*,.mp3,.wav,.ogg,.flac,.aac,.m4a,.opus,.wma,.webm"
-              multiple
-              onChange={handleFileSelect}
-              className="hidden"
+      {/* URL Tab */}
+      {tab === 'url' && (
+        <form onSubmit={handleUrlSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+          <p style={{
+            fontSize: '9px',
+            letterSpacing: '0.08em',
+            color: 'var(--theme-text-muted)',
+            marginBottom: '6px',
+          }}>
+            youtube · soundcloud · spotify · drive · mp3
+          </p>
+          <div style={{ position: 'relative', flex: 1, minHeight: '60px', marginBottom: '6px' }}>
+            <textarea
+              value={urls}
+              onChange={(e) => setUrls(e.target.value)}
+              placeholder={"paste urls here, one per line..."}
+              className="panel-section outline-none"
+              style={{
+                width: '100%',
+                height: '100%',
+                padding: '8px',
+                resize: 'none',
+                fontSize: '16px',
+                letterSpacing: '0.03em',
+                color: 'var(--theme-text)',
+              }}
+              autoFocus
             />
+          </div>
 
+          {error && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              marginBottom: '4px',
+              fontSize: '9px',
+              color: 'var(--color-error)',
+            }}>
+              <AlertCircle size={11} /> {error}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+            <button type="button" onClick={onClose}
+              style={{
+                padding: '4px 10px',
+                fontSize: '9px',
+                letterSpacing: '0.1em',
+                background: 'none',
+                border: '1px solid var(--theme-border-panel)',
+                borderRadius: '3px',
+                color: 'var(--theme-text-secondary)',
+                cursor: 'pointer',
+              }}
+            >
+              cancel
+            </button>
+            <button type="submit"
+              style={{
+                padding: '4px 10px',
+                fontSize: '9px',
+                letterSpacing: '0.1em',
+                background: 'var(--theme-accent)',
+                border: 'none',
+                borderRadius: '3px',
+                color: '#0a0a0a',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
+              <Plus size={11} /> add
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Local Files Tab */}
+      {tab === 'local' && (
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="audio/*,.mp3,.wav,.ogg,.flac,.aac,.m4a,.opus,.wma,.webm"
+            multiple
+            onChange={handleFileSelect}
+            style={{ display: 'none' }}
+          />
+
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            style={{
+              flex: localFiles.length > 0 ? 'none' : 1,
+              minHeight: '50px',
+              padding: '12px',
+              marginBottom: '6px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px',
+              border: '1px dashed var(--theme-border-panel)',
+              borderRadius: '4px',
+              background: 'var(--theme-bg-panel)',
+              color: 'var(--theme-text-muted)',
+              cursor: 'pointer',
+            }}
+          >
+            <FolderOpen size={18} />
+            <span style={{ fontSize: '9px', letterSpacing: '0.1em' }}>
+              tap to browse or drag files
+            </span>
+            <span style={{ fontSize: '8px', color: 'var(--theme-text-muted)', opacity: 0.6 }}>
+              mp3 · wav · ogg · flac · aac · m4a
+            </span>
+          </button>
+
+          {/* File list */}
+          {localFiles.length > 0 && (
+            <div style={{ maxHeight: '100px', overflowY: 'auto', marginBottom: '6px' }}>
+              {localFiles.map((file, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '3px 6px',
+                    borderBottom: '1px solid var(--theme-border)',
+                  }}
+                >
+                  <Music size={10} style={{ color: 'var(--theme-accent)', flexShrink: 0 }} />
+                  <span style={{
+                    flex: 1,
+                    fontSize: '9px',
+                    color: 'var(--theme-text)',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {file.name}
+                  </span>
+                  <button
+                    onClick={() => removeLocalFile(i)}
+                    style={{ background: 'none', border: 'none', padding: '2px', cursor: 'pointer', color: 'var(--theme-text-muted)' }}
+                  >
+                    <X size={10} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {error && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              marginBottom: '4px',
+              fontSize: '9px',
+              color: 'var(--color-error)',
+            }}>
+              <AlertCircle size={11} /> {error}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+            <button type="button" onClick={onClose}
+              style={{
+                padding: '4px 10px',
+                fontSize: '9px',
+                letterSpacing: '0.1em',
+                background: 'none',
+                border: '1px solid var(--theme-border-panel)',
+                borderRadius: '3px',
+                color: 'var(--theme-text-secondary)',
+                cursor: 'pointer',
+              }}
+            >
+              cancel
+            </button>
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full py-8 mb-3 flex flex-col items-center gap-2 transition-colors"
+              onClick={handleLocalSubmit}
               style={{
-                border: '2px dashed var(--theme-border-panel)',
-                borderRadius: '4px',
-                background: 'var(--theme-bg-panel)',
-                color: 'var(--theme-text-muted)',
-                fontFamily: 'var(--font-mono)',
+                padding: '4px 10px',
+                fontSize: '9px',
+                letterSpacing: '0.1em',
+                background: 'var(--theme-accent)',
+                border: 'none',
+                borderRadius: '3px',
+                color: '#0a0a0a',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                opacity: localFiles.length > 0 ? 1 : 0.4,
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--theme-accent)')}
-              onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--theme-border-panel)')}
             >
-              <FolderOpen size={22} />
-              <span style={{ ...monoStyle }}>Click to browse or drag files here</span>
-              <span style={{ ...monoStyle, fontSize: '9px', color: 'var(--theme-text-muted)' }}>
-                MP3, WAV, OGG, FLAC, AAC, M4A, OPUS
-              </span>
+              <Plus size={11} /> add {localFiles.length > 0 ? localFiles.length : ''}
             </button>
-
-            {/* File list */}
-            {localFiles.length > 0 && (
-              <div className="max-h-40 overflow-auto mb-3 space-y-1">
-                {localFiles.map((file, i) => (
-                  <div
-                    key={i}
-                    className="panel-section flex items-center gap-2 px-3 py-2"
-                  >
-                    <Music size={13} style={{ color: 'var(--theme-accent)' }} />
-                    <span className="flex-1 truncate" style={{ ...monoStyle, color: 'var(--theme-text)' }}>
-                      {file.name}
-                    </span>
-                    <span style={{ ...monoStyle, fontSize: '9px', color: 'var(--theme-text-muted)', fontVariantNumeric: 'tabular-nums' }}>
-                      {(file.size / (1024 * 1024)).toFixed(1)} MB
-                    </span>
-                    <button
-                      onClick={() => removeLocalFile(i)}
-                      className="btn-ghost"
-                      style={{ padding: '2px', color: 'var(--theme-text-muted)' }}
-                    >
-                      <X size={13} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {error && (
-              <div className="flex items-center gap-2 mb-3" style={{ ...monoStyle, color: 'var(--color-error)' }}>
-                <AlertCircle size={13} /> {error}
-              </div>
-            )}
-
-            <div className="flex gap-2 justify-end">
-              <button type="button" onClick={onClose} className="btn-outline" style={{ padding: '8px 16px' }}>
-                CANCEL
-              </button>
-              <button
-                type="button"
-                onClick={handleLocalSubmit}
-                className="btn-accent flex items-center gap-2"
-                style={{
-                  padding: '8px 16px',
-                  opacity: localFiles.length > 0 ? 1 : 0.4,
-                }}
-              >
-                <Plus size={14} /> ADD {localFiles.length > 0 ? `${localFiles.length} FILE${localFiles.length > 1 ? 'S' : ''}` : 'FILES'}
-              </button>
-            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

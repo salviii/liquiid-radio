@@ -480,7 +480,15 @@ export function TrackList({ tracks, viewMode = 'list', playlistId }: TrackListPr
               {/* Menu button */}
               <div className="relative">
                 <button
-                  className="btn-outline p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: '4px',
+                    cursor: 'pointer',
+                    color: 'var(--theme-text-muted)',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
                   onClick={(e) => { e.stopPropagation(); setMenuTrack(menuTrack === t.id ? null : t.id) }}
                 >
                   <MoreHorizontal size={14} />
