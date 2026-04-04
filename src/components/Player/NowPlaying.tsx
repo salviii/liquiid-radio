@@ -73,6 +73,7 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
       zIndex: 10,
       overflow: 'hidden',
       padding: isWidget ? '4px' : '6px 6px 0',
+      height: '100%',
     }}>
       {/* ========================================
           The whole player IS the cartridge
@@ -84,6 +85,7 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
+        height: '100%',
       }}>
 
         {/* ── Disc area ── */}
@@ -92,8 +94,8 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          aspectRatio: '1 / 1',
-          maxHeight: '50svh',
+          flex: 1,
+          minHeight: 0,
           overflow: 'hidden',
         }}>
           {/* Blurred artwork behind disc */}

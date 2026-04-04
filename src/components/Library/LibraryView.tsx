@@ -147,49 +147,6 @@ export function LibraryView() {
           </div>
         </div>
 
-        {/* Search + Sort */}
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <Search size={12} className="absolute top-1/2 -translate-y-1/2"
-              style={{ color: 'var(--theme-text-muted)', left: '8px' }} />
-            <input
-              type="text"
-              placeholder={searchMode === 'spotify' ? 'search spotify...' : 'search...'}
-              value={search}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="panel-section w-full outline-none"
-              style={{
-                paddingLeft: '28px',
-                paddingRight: '8px',
-                letterSpacing: '0.1em',
-                color: 'var(--theme-text)',
-                height: '30px',
-              }}
-            />
-          </div>
-
-          {/* Spotify toggle or sort */}
-          {searchMode === 'library' ? (
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              className="btn-outline cursor-pointer outline-none"
-              style={{ padding: '4px 8px', height: '28px', fontSize: '9px' }}
-            >
-              <option value="added">recent</option>
-              <option value="title">title</option>
-              <option value="artist">artist</option>
-            </select>
-          ) : (
-            <button
-              onClick={() => { setSearchMode('library'); setSearch('') }}
-              className="btn-outline"
-              style={{ padding: '4px 8px', height: '28px', fontSize: '9px', letterSpacing: '0.1em' }}
-            >
-              back
-            </button>
-          )}
-        </div>
 
         {/* Spotify search toggle */}
         {spotifyConnected && searchMode === 'library' && (

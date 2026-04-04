@@ -9,6 +9,8 @@ import { TabNav } from './components/Layout/Sidebar'
 import { MiniPlayer } from './components/Player/MiniPlayer'
 import { NowPlaying } from './components/Player/NowPlaying'
 import { LibraryView, SharePlaylistButton, decodePlaylist } from './components/Library/LibraryView'
+import { isSoundCloudUrl } from './lib/soundcloud'
+import { isYouTubeUrl } from './lib/youtube'
 import { PlaylistView } from './components/Playlist/PlaylistView'
 import { SourcesView } from './components/Library/SourcesView'
 import { FriendsView } from './components/Library/FriendsView'
@@ -60,6 +62,11 @@ function App() {
 
     const addTrack = usePlayerStore.getState().addTrack
     for (const t of tracks) {
+      const sourceType = isSoundCloudUrl(t.url) ? 'soundcloud'
+        : isYouTubeUrl(t.url) ? 'youtube'
+        : t.url.includes('open.spotify.com') ? 'spotify'
+        : 'url'
+      const tags = sourceType !== 'url' ? [sourceType] : []
       addTrack({
         title: t.title,
         artist: t.artist,
@@ -67,8 +74,8 @@ function App() {
         duration: 0,
         url: t.url,
         originalUrl: t.url,
-        sourceType: 'url',
-        tags: [],
+        sourceType,
+        tags,
       })
     }
 

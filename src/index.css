@@ -185,6 +185,7 @@ html, html * {
   font-family: Arial, Helvetica, sans-serif !important;
   text-transform: lowercase !important;
   font-weight: 400 !important;
+  font-size: clamp(9px, 2.2vw, 12px) !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -264,7 +265,6 @@ body::before {
 .knob-sm::after { height: 18%; width: 1.5px; }
 .knob-label {
   font-family: var(--font-mono);
-  font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.15em;
   text-transform: lowercase;
@@ -317,7 +317,6 @@ body::before {
 /* Buttons */
 .btn-ghost {
   font-family: var(--font-mono);
-  font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: lowercase;
   color: var(--theme-text-muted);
@@ -330,7 +329,6 @@ body::before {
 .btn-ghost:hover { color: var(--theme-text); }
 .btn-outline {
   font-family: var(--font-mono);
-  font-size: 10px;
   letter-spacing: 0.15em;
   text-transform: lowercase;
   color: var(--theme-text-secondary);
@@ -344,7 +342,6 @@ body::before {
 .btn-outline:hover { border-color: var(--theme-text-secondary); color: var(--theme-text); }
 .btn-accent {
   font-family: var(--font-mono);
-  font-size: 10px;
   letter-spacing: 0.15em;
   text-transform: lowercase;
   color: #0a0a0a;
@@ -394,7 +391,6 @@ body::before {
 }
 
 .marquee-text {
-  font-size: 9px;
   letter-spacing: 0.15em;
   color: var(--theme-accent);
   padding-right: 60px;
@@ -439,7 +435,8 @@ body::before {
   }
 
   .pocket-player-col {
-    flex: 0 0 auto;
+    flex: 1;
+    min-height: 0;
     overflow: hidden;
   }
 
