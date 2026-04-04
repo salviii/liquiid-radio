@@ -210,6 +210,27 @@
   --theme-accent-text:    #fafafa;
 }
 
+/* Y2K — bubbly glossy girly pop, neutral base that shifts to album art colors */
+[data-theme="y2k"] {
+  --theme-bg:             #f8f7f5;
+  --theme-bg-secondary:   #f0efed;
+  --theme-bg-panel:       #eae8e6;
+  --theme-surface:        #fbfaf9;
+  --theme-surface-hover:  #f3f2f0;
+  --theme-text:           #2a2a2a;
+  --theme-text-secondary: #777777;
+  --theme-text-muted:     #aaaaaa;
+  --theme-accent:         #999999;
+  --theme-accent-dim:     #666666;
+  --theme-border:         #e0deda;
+  --theme-border-panel:   #d4d0cc;
+  --theme-knob:           #999999;
+  --theme-tape-bg:        #eae8e6;
+  --theme-tape-line:      #d4d0cc;
+  --theme-player-bg:      #f8f7f5;
+  --theme-accent-text:    #ffffff;
+}
+
 /* ========================
    Global Reset & Base
    ======================== */
@@ -711,3 +732,191 @@ body::before {
 [data-theme="void"] .btn-accent {
   border-radius: 0;
 }
+
+/* ========================
+   Y2K — bubblegum structural overrides
+   Glossy, pill-shaped, rounded everything
+   ======================== */
+[data-theme="y2k"] {
+  --y2k-radius: 20px;
+  --y2k-btn-radius: 999px;
+}
+
+/* Override font to bubbly rounded sans */
+[data-theme="y2k"],
+[data-theme="y2k"] * {
+  font-family: 'Nunito', 'Quicksand', 'Comfortaa', 'Varela Round', system-ui, sans-serif !important;
+  text-transform: lowercase !important;
+  font-weight: 600 !important;
+}
+
+/* Shell — bubbly rounded */
+[data-theme="y2k"] .pocket-shell {
+  border-radius: var(--y2k-radius);
+  border: 2px solid var(--theme-border);
+  box-shadow:
+    0 8px 32px color-mix(in srgb, var(--theme-accent) 20%, transparent),
+    0 2px 8px color-mix(in srgb, var(--theme-accent) 10%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  background: linear-gradient(180deg, var(--theme-bg) 0%, var(--theme-bg-secondary) 100%);
+}
+
+@media (max-width: 600px) {
+  [data-theme="y2k"] .pocket-shell {
+    border-radius: 16px;
+    margin: 4px;
+    width: calc(100% - 8px);
+    max-width: calc(100% - 8px);
+    height: calc(100svh - 8px);
+    max-height: calc(100svh - 8px);
+    border: 2px solid var(--theme-border);
+    box-shadow:
+      0 8px 32px color-mix(in srgb, var(--theme-accent) 20%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+}
+
+/* Panels — glossy, rounded */
+[data-theme="y2k"] .panel {
+  border-radius: 16px;
+  border: 1.5px solid var(--theme-border);
+  box-shadow:
+    0 4px 16px color-mix(in srgb, var(--theme-accent) 10%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  background: linear-gradient(180deg, var(--theme-surface) 0%, var(--theme-bg) 100%);
+}
+
+[data-theme="y2k"] .panel-section {
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--theme-bg) 0%, var(--theme-bg-secondary) 100%);
+  box-shadow: inset 0 2px 4px color-mix(in srgb, var(--theme-accent) 8%, transparent);
+}
+
+/* Buttons — pill shaped, glossy gradient */
+[data-theme="y2k"] .btn-accent {
+  border-radius: var(--y2k-btn-radius);
+  padding: 6px 16px;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--theme-accent) 80%, white) 0%,
+    var(--theme-accent) 50%,
+    color-mix(in srgb, var(--theme-accent) 85%, black) 100%
+  );
+  box-shadow:
+    0 2px 8px color-mix(in srgb, var(--theme-accent) 35%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  border: 1px solid color-mix(in srgb, var(--theme-accent) 85%, black);
+  color: var(--theme-accent-text, #fff) !important;
+}
+[data-theme="y2k"] .btn-accent:hover {
+  opacity: 1;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--theme-accent) 70%, white) 0%,
+    color-mix(in srgb, var(--theme-accent) 90%, white) 50%,
+    var(--theme-accent) 100%
+  );
+}
+
+[data-theme="y2k"] .btn-outline {
+  border-radius: var(--y2k-btn-radius);
+  border: 1.5px solid var(--theme-border-panel);
+  padding: 5px 14px;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+[data-theme="y2k"] .btn-outline:hover {
+  border-color: var(--theme-accent);
+  background: color-mix(in srgb, var(--theme-accent) 8%, transparent);
+  color: var(--theme-accent);
+}
+
+/* Tab nav — bubbly */
+[data-theme="y2k"] .tab-nav {
+  background: linear-gradient(180deg, var(--theme-bg) 0%, var(--theme-bg-secondary) 100%);
+  border-bottom: 1.5px solid var(--theme-border);
+  gap: 4px;
+  padding: 4px 12px;
+}
+[data-theme="y2k"] .tab-nav-btn {
+  border-radius: 12px;
+  color: var(--theme-text-muted);
+}
+[data-theme="y2k"] .tab-nav-btn:hover {
+  color: var(--theme-accent);
+  background: color-mix(in srgb, var(--theme-accent) 10%, transparent);
+}
+[data-theme="y2k"] .tab-nav-btn.active {
+  color: var(--theme-accent);
+  background: color-mix(in srgb, var(--theme-accent) 12%, transparent);
+  border: 1px solid var(--theme-border);
+  box-shadow: inset 0 1px 3px color-mix(in srgb, var(--theme-accent) 10%, transparent);
+}
+[data-theme="y2k"] .tab-nav-led {
+  background: var(--theme-accent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--theme-accent) 60%, transparent);
+}
+
+/* Marquee — gradient text */
+[data-theme="y2k"] .marquee-bar {
+  background: linear-gradient(90deg, var(--theme-bg), var(--theme-bg-secondary), var(--theme-bg-panel), var(--theme-bg));
+  border-bottom: 1.5px solid var(--theme-border);
+}
+[data-theme="y2k"] .marquee-text {
+  color: var(--theme-text-secondary);
+}
+
+/* Share button — glossy accent */
+[data-theme="y2k"] .share-playlist-btn {
+  border-radius: 0;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--theme-accent) 80%, white) 0%,
+    var(--theme-accent) 50%,
+    color-mix(in srgb, var(--theme-accent) 85%, black) 100%
+  ) !important;
+  box-shadow: 0 -2px 8px color-mix(in srgb, var(--theme-accent) 20%, transparent);
+}
+
+/* Scrollbar — accent */
+[data-theme="y2k"] ::-webkit-scrollbar-thumb {
+  background: var(--theme-accent);
+  border-radius: 999px;
+}
+
+/* Selection — accent highlight */
+[data-theme="y2k"] ::selection {
+  background: color-mix(in srgb, var(--theme-accent) 25%, transparent);
+  color: var(--theme-text-secondary);
+}
+
+/* LED — accent glow */
+[data-theme="y2k"] .led.active {
+  background: var(--theme-accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--theme-accent) 60%, transparent), 0 0 16px color-mix(in srgb, var(--theme-accent) 30%, transparent);
+}
+
+/* Noise texture — remove for cleaner glossy look */
+[data-theme="y2k"] body::before {
+  opacity: 0;
+}
+
+/* Background — soft gradient, tinted by chameleon vars */
+[data-theme="y2k"] body {
+  background: linear-gradient(135deg, var(--theme-bg) 0%, var(--theme-bg-secondary) 35%, var(--theme-bg-panel) 65%, var(--theme-bg) 100%) !important;
+}
+
+/* Player area — glossy */
+[data-theme="y2k"] .now-playing-wrapper > div {
+  border-radius: 16px !important;
+  background: linear-gradient(180deg, var(--theme-surface), var(--theme-bg-secondary)) !important;
+  border: 1.5px solid var(--theme-border);
+  box-shadow:
+    0 4px 16px color-mix(in srgb, var(--theme-accent) 12%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* Color picker — accent border */
+[data-theme="y2k"] .color-picker-knob::-webkit-color-swatch {
+  border-color: var(--theme-accent);
+  border-radius: 50%;
+}
+
+/* (Y2K chameleon overrides are now integrated into the main Y2K rules above) */

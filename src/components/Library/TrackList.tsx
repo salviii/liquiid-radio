@@ -354,7 +354,10 @@ export function TrackList({ tracks, viewMode = 'list', playlistId }: TrackListPr
               className="group flex items-center gap-4 px-4 py-4 cursor-pointer transition-colors"
               style={{
                 borderBottom: '1px solid var(--theme-border)',
-                background: 'transparent',
+                background: active
+                  ? 'color-mix(in srgb, var(--theme-accent) 10%, transparent)'
+                  : 'transparent',
+                borderLeft: active ? '3px solid var(--theme-accent)' : '3px solid transparent',
                 opacity: isDead ? 0.45 : 1,
               }}
               onClick={() => handleClick(t, i)}

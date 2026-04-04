@@ -16,21 +16,23 @@ export function useChameleon() {
   const animFrameRef = useRef<number>(0)
 
   useEffect(() => {
-    const isChameleon = theme === 'chameleon' || theme === 'chameleon-dark'
+    const isChameleon = theme === 'chameleon' || theme === 'chameleon-dark' || theme === 'y2k'
 
     if (!isChameleon) {
       // Clean up chameleon-specific styles when switching away
       const root = document.documentElement
-      root.style.removeProperty('--chameleon-tint')
-      root.style.removeProperty('--chameleon-accent')
-      root.style.removeProperty('--theme-accent')
-      root.style.removeProperty('--theme-accent-dim')
-      root.style.removeProperty('--theme-accent-secondary')
-      root.style.removeProperty('--theme-accent-tertiary')
-      root.style.removeProperty('--theme-player-progress')
-      root.style.removeProperty('--theme-player-bg')
-      root.style.removeProperty('--theme-border')
-      root.style.removeProperty('--theme-border-panel')
+      const props = [
+        '--chameleon-tint', '--chameleon-accent',
+        '--theme-accent', '--theme-accent-dim', '--theme-accent-text',
+        '--theme-accent-secondary', '--theme-accent-tertiary',
+        '--theme-player-progress', '--theme-player-bg',
+        '--theme-border', '--theme-border-panel',
+        '--theme-bg', '--theme-bg-secondary', '--theme-bg-panel',
+        '--theme-surface', '--theme-surface-hover',
+        '--theme-text-muted', '--theme-text-secondary',
+        '--theme-tape-bg', '--theme-tape-line', '--theme-knob',
+      ]
+      props.forEach(p => root.style.removeProperty(p))
       return
     }
 
@@ -41,12 +43,12 @@ export function useChameleon() {
     if (!coverArt) {
       // No cover art — soft lavender default
       applyPalette({
-        primary: '#7B8CDE',
-        secondary: '#DE7B9E',
-        tertiary: '#7BDEBC',
+        primary: theme === 'y2k' ? '#999999' : '#7B8CDE',
+        secondary: theme === 'y2k' ? '#888888' : '#DE7B9E',
+        tertiary: theme === 'y2k' ? '#777777' : '#7BDEBC',
         isDark: false,
         avgBrightness: 140,
-      }, theme === 'chameleon-dark')
+      }, theme === 'chameleon-dark', theme === 'y2k')
       return
     }
 
@@ -56,14 +58,14 @@ export function useChameleon() {
       if (cancelled || !isChameleon) return
       if (palette) {
         console.log('[chameleon] Extracted palette:', palette)
-        applyPalette(palette, theme === 'chameleon-dark')
+        applyPalette(palette, theme === 'chameleon-dark', theme === 'y2k')
       }
     })
 
     return () => { cancelled = true }
   }, [theme, coverArt])
 
-  function applyPalette(palette: ExtractedPalette, isDarkTheme: boolean) {
+  function applyPalette(palette: ExtractedPalette, isDarkTheme: boolean, isY2k: boolean = false) {
     const root = document.documentElement
 
     // Generate full palette variants from primary
@@ -93,7 +95,37 @@ export function useChameleon() {
     root.style.setProperty('--theme-accent-tertiary', tertiaryPalette.accent)
 
     // Legibility adjustments based on artwork brightness
-    if (isDarkTheme) {
+    if (isY2k) {
+      // Y2K: tint EVERYTHING with the extracted colors — full immersion
+      // Neutral gray/white bases — color comes entirely from album art
+      const p = palette.primary
+      const s = palette.secondary
+      root.style.setProperty('--theme-bg',
+        `color-mix(in srgb, ${p} 12%, #f8f7f5)`)
+      root.style.setProperty('--theme-bg-secondary',
+        `color-mix(in srgb, ${p} 18%, #f0efed)`)
+      root.style.setProperty('--theme-bg-panel',
+        `color-mix(in srgb, ${p} 20%, #eae8e6)`)
+      root.style.setProperty('--theme-surface',
+        `color-mix(in srgb, ${p} 8%, #fbfaf9)`)
+      root.style.setProperty('--theme-surface-hover',
+        `color-mix(in srgb, ${p} 14%, #f3f2f0)`)
+      root.style.setProperty('--theme-player-bg',
+        `color-mix(in srgb, ${p} 10%, #f8f7f5)`)
+      root.style.setProperty('--theme-border',
+        `color-mix(in srgb, ${p} 30%, #e0deda)`)
+      root.style.setProperty('--theme-border-panel',
+        `color-mix(in srgb, ${s} 25%, #d4d0cc)`)
+      root.style.setProperty('--theme-text-muted',
+        `color-mix(in srgb, ${p} 30%, #aaaaaa)`)
+      root.style.setProperty('--theme-text-secondary',
+        `color-mix(in srgb, ${p} 25%, #777777)`)
+      root.style.setProperty('--theme-tape-bg',
+        `color-mix(in srgb, ${s} 20%, #eae8e6)`)
+      root.style.setProperty('--theme-tape-line',
+        `color-mix(in srgb, ${s} 20%, #d4d0cc)`)
+      root.style.setProperty('--theme-knob', primaryPalette.accent)
+    } else if (isDarkTheme) {
       // Dark chameleon: tint the dark background subtly with primary
       const tintAlpha = 0.08
       root.style.setProperty('--theme-player-bg',
@@ -105,15 +137,12 @@ export function useChameleon() {
     } else {
       // Light chameleon: adjust player bg based on artwork brightness
       if (palette.avgBrightness > 200) {
-        // Very bright artwork — darken bg slightly for contrast
         root.style.setProperty('--theme-player-bg',
           `color-mix(in srgb, ${palette.primary} 6%, #E8E4DE)`)
       } else if (palette.avgBrightness < 80) {
-        // Very dark artwork — lighten bg to keep text readable
         root.style.setProperty('--theme-player-bg',
           `color-mix(in srgb, ${palette.primary} 5%, #F5F2EE)`)
       } else {
-        // Normal — subtle tint
         root.style.setProperty('--theme-player-bg',
           `color-mix(in srgb, ${palette.primary} 4%, #F2EFE9)`)
       }

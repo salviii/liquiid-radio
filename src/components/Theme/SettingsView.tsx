@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react'
 import { usePlayerStore } from '../../store/playerStore'
-import { Palette, Sun, Moon, Disc3, Waves, Sparkles, Music } from 'lucide-react'
+import { Palette, Sun, Moon, Disc3, Waves, Sparkles, Music, Heart } from 'lucide-react'
 import { AuthPanel } from '../Auth/AuthPanel'
 import { AuthContext } from '../../App'
 import {
@@ -18,6 +18,7 @@ const THEMES = [
   { id: 'void', name: 'Void', description: 'pure black, red accent', icon: Moon, preview: '#000000' },
   { id: 'chameleon', name: 'Chameleon', description: 'light + album art colors', icon: Sparkles, preview: 'linear-gradient(135deg, #e8a4a4, #a4c8e8, #a4e8b4)' },
   { id: 'chameleon-dark', name: 'Chameleon Dark', description: 'dark + album art colors', icon: Sparkles, preview: 'linear-gradient(135deg, #3a1a1a, #1a2a3a, #1a3a1a)' },
+  { id: 'y2k', name: 'Y2K', description: 'bubblegum pop, glossy pink', icon: Heart, preview: 'linear-gradient(135deg, #ff69b4, #e8a0ff, #a0d4ff)' },
 ]
 
 export function SettingsView() {
