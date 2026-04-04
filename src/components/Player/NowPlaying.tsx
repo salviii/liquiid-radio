@@ -70,17 +70,21 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
 
   return (
     <div className="now-playing-wrapper" style={{
-      flexShrink: 0,
+      flex: 1,
+      minHeight: 0,
       zIndex: 10,
       overflow: 'hidden',
-      padding: isWidget ? '4px' : '10px 10px 0',
+      padding: isWidget ? '4px' : '6px 6px 0',
+      display: 'flex',
+      flexDirection: 'column',
     }}>
       {/* ========================================
           The whole player IS the cartridge
           ======================================== */}
       <div style={{
         position: 'relative',
-        aspectRatio: '1 / 1',
+        flex: 1,
+        minHeight: 0,
         borderRadius: '8px',
         background: 'var(--theme-bg)',
         overflow: 'hidden',
@@ -118,7 +122,7 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
         <div style={{
           position: 'relative',
           zIndex: 5,
-          padding: '6px 16px 2px',
+          padding: '12px 16px 4px',
           textAlign: 'center',
         }}>
           <p className="truncate" style={{
@@ -142,7 +146,7 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
         <div style={{
           position: 'relative',
           zIndex: 5,
-          padding: isWidget ? '3px 12px 0' : '4px 16px 0',
+          padding: isWidget ? '3px 12px 0' : '6px 16px 0',
         }}>
           <div
             ref={scrubRef}
@@ -213,7 +217,7 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
           alignItems: 'center',
           justifyContent: 'center',
           gap: isWidget ? '6px' : '12px',
-          padding: '2px 0 8px',
+          padding: '4px 0 14px',
         }}>
           <button onClick={toggleShuffle} style={{
             background: 'none', border: 'none', padding: '6px', cursor: 'pointer',

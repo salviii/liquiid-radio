@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, useCallback } from 'react'
+import { createContext, useEffect, useState } from 'react'
 import { usePlayerStore } from './store/playerStore'
 import { useAudioEngine } from './hooks/useAudioEngine'
 import { useMetadataReader } from './hooks/useMetadata'
@@ -13,7 +13,6 @@ import { PlaylistView } from './components/Playlist/PlaylistView'
 import { SourcesView } from './components/Library/SourcesView'
 import { FriendsView } from './components/Library/FriendsView'
 import { SettingsView } from './components/Theme/SettingsView'
-import { ChevronDown } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 
 // Auth context shared across the app
@@ -42,12 +41,6 @@ function App() {
   const theme = usePlayerStore((s) => s.theme)
   const currentTrackForMarquee = usePlayerStore((s) => s.currentTrack)
   const [showMiniPlayer, setShowMiniPlayer] = useState(false)
-  const [panelOpen, setPanelOpen] = useState(false)
-
-  // When a nav tab is clicked, open the panel
-  const handleNavClick = useCallback(() => {
-    setPanelOpen(true)
-  }, [])
 
   // Apply persisted theme on mount
   useEffect(() => {
@@ -172,37 +165,17 @@ function App() {
 
           {/* Body: player + content */}
           <div className="pocket-body">
-            {/* Left side: player (landscape) / top (portrait) */}
-            <div className={`pocket-player-col ${panelOpen ? 'panel-open' : ''}`}>
+            {/* Player always at top */}
+            <div className="pocket-player-col">
               <NowPlaying onSeek={seekTo} />
             </div>
 
-            {/* Right side: content (landscape) / bottom (portrait) */}
-            <div className={`pocket-content-col ${panelOpen ? 'panel-open' : ''}`}>
-              {/* Close button to return to fullscreen player */}
-              {panelOpen && (
-                <button
-                  className="panel-close-btn"
-                  onClick={() => setPanelOpen(false)}
-                  style={{
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'var(--theme-surface)',
-                    border: 'none',
-                    borderBottom: '1px solid var(--theme-border)',
-                    cursor: 'pointer',
-                    padding: '4px',
-                    color: 'var(--theme-text-muted)',
-                    width: '100%',
-                  }}
-                >
-                  <ChevronDown size={16} />
-                </button>
-              )}
+            {/* Content below player */}
+            <div className="pocket-content-col">
               <div className="pocket-content">
                 {renderView()}
               </div>
-              <TabNav onNavClick={handleNavClick} />
+              <TabNav />
             </div>
           </div>
         </div>

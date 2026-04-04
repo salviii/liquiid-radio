@@ -103,67 +103,65 @@ export function LibraryView() {
     <div className="flex-1 overflow-auto pb-4">
 
       {/* Library header */}
-      <div className="px-4 pt-6 pb-5">
-        <div className="flex items-center justify-between mb-5">
-          <h2
-            className="text-sm"
-            style={{
-              letterSpacing: '0.15em',
-              color: 'var(--theme-text)',
-            }}
-          >
+      <div className="px-3 pt-3 pb-2">
+        <div className="flex items-center justify-between mb-2">
+          <h2 style={{
+            fontSize: '10px',
+            letterSpacing: '0.15em',
+            color: 'var(--theme-text)',
+          }}>
             library
           </h2>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => setViewMode('list')}
               className={`btn-outline flex items-center justify-center ${viewMode === 'list' ? 'active' : ''}`}
               style={{
-                padding: '6px 8px',
+                padding: '4px 6px',
                 background: viewMode === 'list' ? 'var(--theme-accent-dim)' : undefined,
                 borderColor: viewMode === 'list' ? 'var(--theme-accent)' : undefined,
                 color: viewMode === 'list' ? 'var(--theme-accent)' : undefined,
               }}
             >
-              <List size={13} />
+              <List size={11} />
             </button>
             <button
               onClick={() => setViewMode('grid')}
               className={`btn-outline flex items-center justify-center ${viewMode === 'grid' ? 'active' : ''}`}
               style={{
-                padding: '6px 8px',
+                padding: '4px 6px',
                 background: viewMode === 'grid' ? 'var(--theme-accent-dim)' : undefined,
                 borderColor: viewMode === 'grid' ? 'var(--theme-accent)' : undefined,
                 color: viewMode === 'grid' ? 'var(--theme-accent)' : undefined,
               }}
             >
-              <LayoutGrid size={13} />
+              <LayoutGrid size={11} />
             </button>
             <button
               onClick={() => setShowAddModal(true)}
-              className="btn-accent flex items-center gap-1.5"
-              style={{ padding: '6px 14px' }}
+              className="btn-accent flex items-center gap-1"
+              style={{ padding: '4px 10px', fontSize: '9px' }}
             >
-              <Plus size={13} /> add
+              <Plus size={11} /> add
             </button>
           </div>
         </div>
 
         {/* Search + Sort */}
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           <div className="flex-1 relative">
-            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2"
+            <Search size={11} className="absolute left-2.5 top-1/2 -translate-y-1/2"
               style={{ color: 'var(--theme-text-muted)' }} />
             <input
               type="text"
               placeholder={searchMode === 'spotify' ? 'search spotify...' : 'search...'}
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
-              className="panel-section w-full pl-9 pr-4 py-2.5 outline-none"
+              className="panel-section w-full pl-7 pr-3 py-1 outline-none"
               style={{
-                fontSize: '10px',
-                letterSpacing: '0.15em',
+                letterSpacing: '0.1em',
                 color: 'var(--theme-text)',
+                height: '28px',
               }}
             />
           </div>
@@ -174,7 +172,7 @@ export function LibraryView() {
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
               className="btn-outline cursor-pointer outline-none"
-              style={{ padding: '6px 12px' }}
+              style={{ padding: '4px 8px', height: '28px', fontSize: '9px' }}
             >
               <option value="added">recent</option>
               <option value="title">title</option>
@@ -184,7 +182,7 @@ export function LibraryView() {
             <button
               onClick={() => { setSearchMode('library'); setSearch('') }}
               className="btn-outline"
-              style={{ padding: '6px 12px', fontSize: '9px', letterSpacing: '0.1em' }}
+              style={{ padding: '4px 8px', height: '28px', fontSize: '9px', letterSpacing: '0.1em' }}
             >
               back
             </button>
@@ -195,27 +193,27 @@ export function LibraryView() {
         {spotifyConnected && searchMode === 'library' && (
           <button
             onClick={() => setSearchMode('spotify')}
-            className="flex items-center gap-1.5 mt-3"
+            className="flex items-center gap-1 mt-2"
             style={{
               background: 'none',
               border: '1px solid var(--theme-border)',
-              borderRadius: '4px',
-              padding: '5px 10px',
+              borderRadius: '3px',
+              padding: '3px 8px',
               cursor: 'pointer',
-              fontSize: '9px',
+              fontSize: '8px',
               letterSpacing: '0.1em',
               color: '#1db954',
               width: '100%',
               justifyContent: 'center',
             }}
           >
-            <Music size={11} />
-            search spotify library
+            <Music size={9} />
+            search spotify
           </button>
         )}
       </div>
 
-      <div className="px-4" style={{ flex: 1 }}>
+      <div className="px-3" style={{ flex: 1 }}>
         {searchMode === 'spotify' ? (
           <SpotifyResultsList
             results={spotifyResults}
