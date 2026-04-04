@@ -13,6 +13,18 @@ export function LibraryView() {
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState<'added' | 'title' | 'artist'>('added')
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
+  const [shareCopied, setShareCopied] = useState(false)
+
+  function handleShare() {
+    const encoded = encodePlaylist(tracks)
+    const url = `${window.location.origin}${window.location.pathname}?p=${encoded}`
+    navigator.clipboard.writeText(url).then(() => {
+      setShareCopied(true)
+      setTimeout(() => setShareCopied(false), 2000)
+    }).catch(() => {
+      prompt('copy this link:', url)
+    })
+  }
 
   // Spotify search state
   const spotifyConnected = isSpotifyConnected()
@@ -144,6 +156,15 @@ export function LibraryView() {
             >
               <Plus size={11} /> add
             </button>
+            {tracks.length > 0 && (
+              <button
+                onClick={handleShare}
+                className="btn-accent flex items-center gap-1"
+                style={{ padding: '4px 10px', fontSize: '9px' }}
+              >
+                <Share2 size={11} /> {shareCopied ? 'copied!' : 'share'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -437,9 +458,31 @@ export function decodePlaylist(encoded: string): { url: string; title: string; a
 }
 
 // Generate a shareable link encoding the playlist
+function useAccentTextColor(): string {
+  const [color, setColor] = useState('#fff')
+  useEffect(() => {
+    function update() {
+      const accent = getComputedStyle(document.documentElement).getPropertyValue('--theme-accent').trim()
+      const hex = accent.startsWith('#') ? accent : '#000'
+      const r = parseInt(hex.slice(1, 3), 16) || 0
+      const g = parseInt(hex.slice(3, 5), 16) || 0
+      const b = parseInt(hex.slice(5, 7), 16) || 0
+      // Relative luminance
+      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+      setColor(luminance > 0.5 ? '#000' : '#fff')
+    }
+    update()
+    const observer = new MutationObserver(update)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme', 'style'] })
+    return () => observer.disconnect()
+  }, [])
+  return color
+}
+
 export function SharePlaylistButton() {
   const tracks = usePlayerStore((s) => s.tracks)
   const [copied, setCopied] = useState(false)
+  const textColor = useAccentTextColor()
 
   function generateShareLink() {
     const encoded = encodePlaylist(tracks)
@@ -458,26 +501,30 @@ export function SharePlaylistButton() {
   return (
     <button
       onClick={generateShareLink}
+      className="share-playlist-btn"
       style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: '6px',
         width: '100%',
-        padding: '5px 0',
-        background: 'none',
+        padding: '8px 0',
+        background: 'var(--theme-accent)',
+        color: textColor,
         border: 'none',
-        borderTop: '1px solid var(--theme-border)',
         cursor: 'pointer',
-        fontSize: '9px',
+        fontSize: '10px',
+        fontWeight: 600,
         letterSpacing: '0.12em',
-        color: 'var(--theme-accent)',
         flexShrink: 0,
+        position: 'sticky',
+        bottom: 0,
+        zIndex: 10,
         transition: 'opacity 0.15s',
-        opacity: copied ? 1 : 0.75,
+        opacity: copied ? 1 : 0.9,
       }}
     >
-      <Share2 size={11} />
+      <Share2 size={12} />
       {copied ? 'link copied!' : 'share playlist'}
     </button>
   )

@@ -436,13 +436,12 @@ body::before {
 
   .pocket-player-col {
     flex: none;
-    height: 50%;
+    height: auto;
     overflow: hidden;
   }
 
   .pocket-content-col {
-    flex: none;
-    height: 50%;
+    flex: 1;
     min-height: 0;
     overflow: hidden;
   }
