@@ -429,23 +429,29 @@ body::before {
 /* Mobile */
 @media (max-width: 600px) {
   .pocket-shell {
-    max-width: 92%;
-    max-height: 88svh;
-    height: 88svh;
-    width: 92%;
+    max-width: 96%;
+    max-height: 92svh;
+    height: 92svh;
+    width: 96%;
     border-radius: 12px;
     border: 1px solid var(--theme-border);
     box-shadow: 0 8px 40px rgba(0,0,0,0.18);
   }
 
   .pocket-player-col {
-    flex-shrink: 0;
-    max-height: 45svh;
+    flex: 0 0 auto;
     overflow: hidden;
   }
 
   .pocket-content-col {
     flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .pocket-content-col .pocket-content {
+    flex: 1;
+    overflow-y: auto;
     min-height: 0;
   }
 

@@ -8,7 +8,7 @@ import { useChameleon } from './hooks/useChameleon'
 import { TabNav } from './components/Layout/Sidebar'
 import { MiniPlayer } from './components/Player/MiniPlayer'
 import { NowPlaying } from './components/Player/NowPlaying'
-import { LibraryView, SharePlaylistButton } from './components/Library/LibraryView'
+import { LibraryView, SharePlaylistButton, decodePlaylist } from './components/Library/LibraryView'
 import { PlaylistView } from './components/Playlist/PlaylistView'
 import { SourcesView } from './components/Library/SourcesView'
 import { FriendsView } from './components/Library/FriendsView'
@@ -47,6 +47,34 @@ function App() {
     if (theme && theme !== 'default') {
       document.documentElement.setAttribute('data-theme', theme)
     }
+  }, [])
+
+  // Import shared playlist from URL param ?p=
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const playlistData = params.get('p')
+    if (!playlistData) return
+
+    const tracks = decodePlaylist(playlistData)
+    if (tracks.length === 0) return
+
+    const addTrack = usePlayerStore.getState().addTrack
+    for (const t of tracks) {
+      addTrack({
+        title: t.title,
+        artist: t.artist,
+        album: '',
+        duration: 0,
+        url: t.url,
+        originalUrl: t.url,
+        sourceType: 'url',
+        tags: [],
+      })
+    }
+
+    // Clean URL after importing
+    window.history.replaceState({}, '', window.location.pathname)
+    console.log(`[playlist] imported ${tracks.length} tracks from shared link`)
   }, [])
 
   // Keyboard shortcuts

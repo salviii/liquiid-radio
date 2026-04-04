@@ -70,21 +70,15 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
 
   return (
     <div className="now-playing-wrapper" style={{
-      flex: 1,
-      minHeight: 0,
       zIndex: 10,
       overflow: 'hidden',
       padding: isWidget ? '4px' : '6px 6px 0',
-      display: 'flex',
-      flexDirection: 'column',
     }}>
       {/* ========================================
           The whole player IS the cartridge
           ======================================== */}
       <div style={{
         position: 'relative',
-        flex: 1,
-        minHeight: 0,
         borderRadius: '8px',
         background: 'var(--theme-bg)',
         overflow: 'hidden',
@@ -98,7 +92,8 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          flex: 1,
+          aspectRatio: '1 / 1',
+          maxHeight: '50svh',
           overflow: 'hidden',
         }}>
           {/* Blurred artwork behind disc */}
@@ -122,7 +117,7 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
         <div style={{
           position: 'relative',
           zIndex: 5,
-          padding: '12px 16px 4px',
+          padding: '6px 12px 2px',
           textAlign: 'center',
         }}>
           <p className="truncate" style={{
@@ -146,7 +141,7 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
         <div style={{
           position: 'relative',
           zIndex: 5,
-          padding: isWidget ? '3px 12px 0' : '6px 16px 0',
+          padding: isWidget ? '3px 12px 0' : '2px 12px 0',
         }}>
           <div
             ref={scrubRef}
@@ -217,7 +212,7 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
           alignItems: 'center',
           justifyContent: 'center',
           gap: isWidget ? '6px' : '12px',
-          padding: '4px 0 14px',
+          padding: '2px 0 8px',
         }}>
           <button onClick={toggleShuffle} style={{
             background: 'none', border: 'none', padding: '6px', cursor: 'pointer',
@@ -380,20 +375,19 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
 // MiniDisc cartridge — transparent shell with spinning disc
 // ============================================================
 function MiniDisc({ cover, isPlaying, isWidget }: { cover?: string; isPlaying: boolean; isWidget: boolean }) {
-  const discSize = isWidget ? 100 : 200
-
   return (
     <div style={{
       position: 'relative',
       zIndex: 2,
-      width: discSize,
-      height: discSize,
+      width: isWidget ? '100px' : '60%',
+      maxWidth: '220px',
+      aspectRatio: '1 / 1',
     }}>
       <div
         className={isPlaying ? 'animate-[spin_3s_linear_infinite]' : ''}
         style={{
-          width: discSize,
-          height: discSize,
+          width: '100%',
+          height: '100%',
           borderRadius: '50%',
           position: 'relative',
           overflow: 'hidden',
