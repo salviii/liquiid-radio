@@ -53,6 +53,7 @@ interface PlayerState {
   // Library actions
   addTrack: (track: Omit<Track, 'id' | 'addedAt'>) => Track
   removeTrack: (id: string) => void
+  clearLibrary: () => void
   updateTrack: (id: string, updates: Partial<Track>) => void
   addSource: (source: Omit<AudioSource, 'id' | 'lastScanned' | 'trackCount'>) => AudioSource
   removeSource: (id: string) => void
@@ -221,6 +222,17 @@ export const usePlayerStore = create<PlayerState>()(
           ...p,
           tracks: p.tracks.filter(tid => tid !== id),
         })),
+      })),
+
+      clearLibrary: () => set((s) => ({
+        tracks: [],
+        currentTrack: null,
+        isPlaying: false,
+        progress: 0,
+        duration: 0,
+        queue: [],
+        queueIndex: -1,
+        playlists: s.playlists.map(p => ({ ...p, tracks: [] })),
       })),
 
       updateTrack: (id, updates) => set((s) => ({

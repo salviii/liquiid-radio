@@ -2,10 +2,11 @@ import { useState, useMemo, useEffect } from 'react'
 import { usePlayerStore } from '../../store/playerStore'
 import { TrackList } from './TrackList'
 import { AddTrackModal } from './AddTrackModal'
-import { Plus, LayoutGrid, List, Share2 } from 'lucide-react'
+import { Plus, LayoutGrid, List, Share2, Trash2 } from 'lucide-react'
 
 export function LibraryView() {
   const tracks = usePlayerStore((s) => s.tracks)
+  const clearLibrary = usePlayerStore((s) => s.clearLibrary)
   const [showAddModal, setShowAddModal] = useState(false)
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [shareCopied, setShareCopied] = useState(false)
@@ -65,6 +66,16 @@ export function LibraryView() {
             >
               <LayoutGrid size={11} />
             </button>
+            {tracks.length > 0 && (
+              <button
+                onClick={() => { if (confirm('Clear all tracks from library?')) clearLibrary() }}
+                className="btn-outline flex items-center justify-center"
+                style={{ padding: '4px 6px' }}
+                title="Clear library"
+              >
+                <Trash2 size={11} />
+              </button>
+            )}
             <button
               onClick={() => setShowAddModal(true)}
               className="btn-accent flex items-center gap-1"

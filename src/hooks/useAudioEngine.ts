@@ -142,8 +142,10 @@ export function useAudioEngine() {
         setProgress(data.currentPosition / 1000)
       })
 
+      // READY fires when the track is loaded inside the widget (after load() call)
       widget.onReady(() => {
         loaded = true
+        console.log('[sc-widget] Ready event fired')
         widget.getDuration().then((durMs) => {
           const durSec = durMs / 1000
           setDuration(durSec)
@@ -152,14 +154,16 @@ export function useAudioEngine() {
             updateTrack(track.id, { duration: Math.round(durSec) })
           }
         })
-        if (shouldPlay) widget.play()
+        // Play on ready — auto_play may be blocked by browser policies
+        if (shouldPlay) {
+          setTimeout(() => widget.play(), 300)
+        }
       })
 
       widget.onPlay(() => {
         if (!usePlayerStore.getState().isPlaying) {
           usePlayerStore.setState({ isPlaying: true })
         }
-        // Re-fetch duration on play — onReady may have fired before track loaded
         widget.getDuration().then((durMs) => {
           const durSec = durMs / 1000
           if (durSec > 0) {
@@ -187,7 +191,9 @@ export function useAudioEngine() {
         showLoginPrompt('soundcloud', scUrl)
       })
 
-      widget.load(scUrl)
+      // Load the track — also trigger play from the load callback as backup
+      // since READY may not re-fire for some widget versions
+      widget.load(scUrl, shouldPlay)
     } catch (err) {
       console.error('[sc-widget] Failed:', err)
       const track = usePlayerStore.getState().currentTrack

@@ -26,11 +26,21 @@ export async function resolveSpotifyTrack(url: string): Promise<{
     if (!response.ok) return null
     const data = await response.json()
 
-    // Spotify oEmbed doesn't return author_name for tracks.
-    // The visible embed in the player shows the full artist info natively.
+    // Spotify oEmbed sometimes omits author_name for tracks.
+    // Try to extract artist from the embed HTML title attribute as fallback.
+    let artist = data.author_name || ''
+    if (!artist && data.html) {
+      const titleMatch = data.html.match(/title="([^"]+)"/)
+      if (titleMatch) {
+        // Embed title is typically "Song Name · Artist Name" or similar
+        const parts = titleMatch[1].split(/\s+(?:·|by)\s+/)
+        if (parts.length >= 2) artist = parts[parts.length - 1]
+      }
+    }
+
     return {
       title: data.title || 'Unknown Track',
-      artist: data.author_name || 'Spotify',
+      artist: artist || 'Unknown Artist',
       thumbnailUrl: data.thumbnail_url,
     }
   } catch {

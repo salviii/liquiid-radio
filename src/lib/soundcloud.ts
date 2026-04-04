@@ -77,7 +77,7 @@ function loadWidgetApi(): Promise<void> {
 }
 
 export interface SCWidgetController {
-  load: (scUrl: string) => void
+  load: (scUrl: string, shouldPlay?: boolean) => void
   play: () => void
   pause: () => void
   seekTo: (ms: number) => void
@@ -124,9 +124,9 @@ export async function createSCWidget(container: HTMLElement): Promise<SCWidgetCo
   const controller: SCWidgetController = {
     iframe,
 
-    load: (scUrl: string) => {
+    load: (scUrl: string, shouldPlay?: boolean) => {
       widget.load(scUrl, {
-        auto_play: true,
+        auto_play: shouldPlay !== false,
         show_artwork: false,
         show_comments: false,
         show_playcount: false,
@@ -137,6 +137,10 @@ export async function createSCWidget(container: HTMLElement): Promise<SCWidgetCo
         visual: false,
         callback: () => {
           console.log('[sc-widget] Loaded:', scUrl)
+          // Backup play trigger — READY event may not re-fire
+          if (shouldPlay !== false) {
+            setTimeout(() => widget.play(), 200)
+          }
         },
       })
     },

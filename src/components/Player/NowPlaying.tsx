@@ -297,7 +297,9 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
             }}>
               {loginPrompt.service === 'spotify'
                 ? 'connect your spotify account to play this track through hurakan.'
-                : `this ${loginPrompt.service === 'youtube' ? 'youtube' : 'soundcloud'} track needs you to be logged in to play.`
+                : loginPrompt.service === 'soundcloud'
+                ? 'soundcloud requires you to be logged in to stream tracks here.'
+                : 'this youtube track needs you to be logged in to play.'
               }
             </p>
 
@@ -307,11 +309,13 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
             }}>
               {loginPrompt.service === 'spotify'
                 ? 'go to settings > spotify connect to link your premium account.'
-                : `log into ${loginPrompt.service === 'youtube' ? 'youtube' : 'soundcloud'} in this browser, then retry.`
+                : loginPrompt.service === 'soundcloud'
+                ? 'log into soundcloud.com in this browser, then come back and hit retry.'
+                : 'log into youtube in this browser, then retry.'
               }
             </p>
 
-            <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '4px', flexWrap: 'wrap', justifyContent: 'center' }}>
               {loginPrompt.service === 'spotify' ? (
                 <button
                   onClick={() => { dismissLoginPrompt(); usePlayerStore.getState().setView('settings') }}
@@ -334,6 +338,21 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
                   }}
                 >
                   log in
+                </a>
+              )}
+
+              {loginPrompt.service === 'soundcloud' && loginPrompt.url && (
+                <a
+                  href={loginPrompt.url}
+                  target="_blank" rel="noopener noreferrer"
+                  style={{
+                    fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.08em',
+                    color: '#fff', background: '#ff5500', border: 'none', borderRadius: '4px',
+                    padding: '6px 14px', cursor: 'pointer', textDecoration: 'none', fontWeight: 600,
+                    display: 'flex', alignItems: 'center', gap: '4px',
+                  }}
+                >
+                  <ExternalLink size={10} /> open track
                 </a>
               )}
 
