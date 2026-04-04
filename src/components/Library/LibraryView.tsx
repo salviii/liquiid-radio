@@ -62,14 +62,6 @@ export function LibraryView() {
     }
   }, [searchMode])
 
-  // Handle search input
-  function _handleSearch(val: string) {
-    setSearch(val)
-    if (searchMode === 'spotify' && spotifyConnected) {
-      doSpotifySearch(val)
-    }
-  }
-
   // Add Spotify track to library
   function addSpotifyTrack(result: SpotifySearchResult) {
     addTrack({
