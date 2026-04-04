@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from 'react'
+import { createContext, useEffect, useState, useCallback } from 'react'
 import { usePlayerStore } from './store/playerStore'
 import { useAudioEngine } from './hooks/useAudioEngine'
 import { useMetadataReader } from './hooks/useMetadata'
@@ -13,6 +13,7 @@ import { PlaylistView } from './components/Playlist/PlaylistView'
 import { SourcesView } from './components/Library/SourcesView'
 import { FriendsView } from './components/Library/FriendsView'
 import { SettingsView } from './components/Theme/SettingsView'
+import { ChevronDown } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 
 // Auth context shared across the app
@@ -39,7 +40,14 @@ function App() {
 
   const currentView = usePlayerStore((s) => s.currentView)
   const theme = usePlayerStore((s) => s.theme)
+  const currentTrackForMarquee = usePlayerStore((s) => s.currentTrack)
   const [showMiniPlayer, setShowMiniPlayer] = useState(false)
+  const [panelOpen, setPanelOpen] = useState(false)
+
+  // When a nav tab is clicked, open the panel
+  const handleNavClick = useCallback(() => {
+    setPanelOpen(true)
+  }, [])
 
   // Apply persisted theme on mount
   useEffect(() => {
@@ -102,11 +110,20 @@ function App() {
 
   const currentCover = usePlayerStore((s) => s.currentTrack?.coverArt)
 
+  const marqueeText = currentTrackForMarquee
+    ? `${currentTrackForMarquee.title} — ${currentTrackForMarquee.artist}${currentTrackForMarquee.album ? ` — ${currentTrackForMarquee.album}` : ''}`
+    : 'liquiid radio'
+
   return (
     <AuthContext.Provider value={authContextValue}>
       <div
-        className="flex items-start justify-center min-h-screen pt-8"
-        style={{ background: 'var(--theme-bg-secondary)', position: 'relative' }}
+        className="flex items-center justify-center"
+        style={{
+          background: 'var(--theme-bg-secondary)',
+          position: 'fixed',
+          inset: 0,
+          padding: '4%',
+        }}
       >
         {/* Blurred album art background — 18% opacity */}
         {currentCover && (
@@ -145,17 +162,48 @@ function App() {
 
         {/* Pocket shell */}
         <div className="pocket-shell">
-          {/* Left side: player (landscape) / top (portrait) */}
-          <div className="pocket-player-col">
-            <NowPlaying onSeek={seekTo} />
+          {/* Marquee — always visible at top */}
+          <div className="marquee-bar">
+            <div className="marquee-track">
+              <span className="marquee-text">{marqueeText}</span>
+              <span className="marquee-text" aria-hidden="true">{marqueeText}</span>
+            </div>
           </div>
 
-          {/* Right side: content (landscape) / bottom (portrait) */}
-          <div className="pocket-content-col">
-            <div className="pocket-content">
-              {renderView()}
+          {/* Body: player + content */}
+          <div className="pocket-body">
+            {/* Left side: player (landscape) / top (portrait) */}
+            <div className={`pocket-player-col ${panelOpen ? 'panel-open' : ''}`}>
+              <NowPlaying onSeek={seekTo} />
             </div>
-            <TabNav />
+
+            {/* Right side: content (landscape) / bottom (portrait) */}
+            <div className={`pocket-content-col ${panelOpen ? 'panel-open' : ''}`}>
+              {/* Close button to return to fullscreen player */}
+              {panelOpen && (
+                <button
+                  className="panel-close-btn"
+                  onClick={() => setPanelOpen(false)}
+                  style={{
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'var(--theme-surface)',
+                    border: 'none',
+                    borderBottom: '1px solid var(--theme-border)',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    color: 'var(--theme-text-muted)',
+                    width: '100%',
+                  }}
+                >
+                  <ChevronDown size={16} />
+                </button>
+              )}
+              <div className="pocket-content">
+                {renderView()}
+              </div>
+              <TabNav onNavClick={handleNavClick} />
+            </div>
           </div>
         </div>
 

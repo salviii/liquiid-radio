@@ -215,7 +215,7 @@ export function LibraryView() {
         )}
       </div>
 
-      <div className="px-4">
+      <div className="px-4" style={{ flex: 1 }}>
         {searchMode === 'spotify' ? (
           <SpotifyResultsList
             results={spotifyResults}
@@ -223,6 +223,41 @@ export function LibraryView() {
             onAdd={addSpotifyTrack}
             isInLibrary={isInLibrary}
           />
+        ) : filteredTracks.length === 0 ? (
+          <div
+            onClick={() => setShowAddModal(true)}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '40px 20px',
+              cursor: 'pointer',
+              border: '1px dashed var(--theme-border-panel)',
+              borderRadius: '6px',
+              marginTop: '8px',
+              transition: 'border-color 0.15s',
+            }}
+          >
+            <Plus size={24} style={{ color: 'var(--theme-text-muted)', marginBottom: '8px' }} />
+            <p style={{
+              fontSize: '11px',
+              color: 'var(--theme-text-muted)',
+              letterSpacing: '0.1em',
+              textAlign: 'center',
+            }}>
+              {search ? 'no results' : 'drop a link or tap to add tracks'}
+            </p>
+            <p style={{
+              fontSize: '9px',
+              color: 'var(--theme-text-muted)',
+              opacity: 0.6,
+              marginTop: '4px',
+              letterSpacing: '0.08em',
+            }}>
+              youtube · soundcloud · spotify · mp3
+            </p>
+          </div>
         ) : (
           <TrackList tracks={filteredTracks} viewMode={viewMode} />
         )}

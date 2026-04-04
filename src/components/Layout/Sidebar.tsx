@@ -10,7 +10,7 @@ const NAV: { id: ViewMode; icon: React.ElementType }[] = [
   { id: 'settings', icon: Settings },
 ]
 
-export function TabNav() {
+export function TabNav({ onNavClick }: { onNavClick?: () => void } = {}) {
   const currentView = usePlayerStore((s) => s.currentView)
   const setView = usePlayerStore((s) => s.setView)
 
@@ -21,7 +21,7 @@ export function TabNav() {
         return (
           <button
             key={id}
-            onClick={() => setView(id)}
+            onClick={() => { setView(id); onNavClick?.() }}
             className={`tab-nav-btn ${active ? 'active' : ''}`}
           >
             <Icon size={15} strokeWidth={1.5} />

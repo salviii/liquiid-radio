@@ -374,13 +374,46 @@ body::before {
 }
 
 /* ========================
+   Marquee
+   ======================== */
+.marquee-bar {
+  width: 100%;
+  overflow: hidden;
+  background: var(--theme-bg);
+  border-bottom: 1px solid var(--theme-border);
+  flex-shrink: 0;
+  height: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.marquee-track {
+  display: flex;
+  white-space: nowrap;
+  animation: marquee-scroll 18s linear infinite;
+}
+
+.marquee-text {
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: var(--theme-accent);
+  padding-right: 60px;
+  flex-shrink: 0;
+}
+
+@keyframes marquee-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ========================
    Pocket Shell
    ======================== */
 .pocket-shell {
   max-width: 400px;
-  max-height: 90svh;
-  width: 100%;
-  height: 100svh;
+  max-height: 85svh;
+  width: 85%;
+  height: 85svh;
   margin: auto;
   overflow: hidden;
   border-radius: 8px;
@@ -396,27 +429,66 @@ body::before {
 /* Mobile: fit within safe area, account for Safari bottom bar */
 @media (max-width: 600px) {
   .pocket-shell {
-    max-height: 100svh;
-    height: 100svh;
-    border-radius: 0;
-    border: none;
-    box-shadow: none;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    max-width: 92%;
+    max-height: 88svh;
+    height: 88svh;
+    width: 92%;
+    border-radius: 12px;
+    border: 1px solid var(--theme-border);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
   }
 
+  /* Default: player is fullscreen, content hidden */
   .pocket-player-col {
-    max-height: 50svh;
+    flex: 1;
+    max-height: none;
     overflow: hidden;
-    flex-shrink: 1;
+    transition: flex 0.3s ease;
   }
 
   .pocket-content-col {
-    min-height: 30svh;
+    flex: 0;
+    min-height: 0;
+    overflow: hidden;
+    transition: flex 0.3s ease;
+  }
+
+  /* When panel is open: player shrinks, content expands */
+  .pocket-player-col.panel-open {
+    flex: 0;
+    max-height: 0;
+    overflow: hidden;
+  }
+
+  .pocket-content-col.panel-open {
+    flex: 1;
+    min-height: 0;
   }
 
   .tab-nav {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+
+  /* Hide close button on desktop */
+  .panel-close-btn {
+    display: flex;
+  }
+}
+
+/* Desktop: hide close button */
+@media (min-width: 601px) {
+  .panel-close-btn {
+    display: none !important;
+  }
+}
+
+/* Body wraps player + content */
+.pocket-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* Portrait (default): player on top, content below */
@@ -436,24 +508,31 @@ body::before {
 @media (min-width: 601px) {
   .pocket-shell {
     max-width: 820px;
-    max-height: none;
-    height: auto;
+    width: 85%;
+    max-height: 85svh;
+    height: 85svh;
+    flex-direction: column;
+  }
+
+  .pocket-body {
     flex-direction: row;
-    align-items: stretch;
+    flex: 1;
+    min-height: 0;
   }
 
   .pocket-player-col {
     width: 400px;
     min-width: 400px;
-    flex-shrink: 0;
+    max-height: none !important;
+    flex: none !important;
     overflow: visible;
     border-right: 1px solid var(--theme-border);
   }
 
+  /* Always show content on desktop */
   .pocket-content-col {
     flex: 1;
     min-width: 0;
-    /* Match height of player col and scroll internally */
     overflow: hidden;
   }
 
