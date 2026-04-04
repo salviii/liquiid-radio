@@ -224,7 +224,7 @@ export const usePlayerStore = create<PlayerState>()(
         })),
       })),
 
-      clearLibrary: () => set((s) => ({
+      clearLibrary: () => set({
         tracks: [],
         currentTrack: null,
         isPlaying: false,
@@ -232,8 +232,7 @@ export const usePlayerStore = create<PlayerState>()(
         duration: 0,
         queue: [],
         queueIndex: -1,
-        playlists: s.playlists.map(p => ({ ...p, tracks: [] })),
-      })),
+      }),
 
       updateTrack: (id, updates) => set((s) => ({
         tracks: s.tracks.map(t => t.id === id ? { ...t, ...updates } : t),

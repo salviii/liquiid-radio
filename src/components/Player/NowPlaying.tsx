@@ -421,16 +421,7 @@ function MiniDisc({ cover, isPlaying, isWidget }: { cover?: string; isPlaying: b
           borderRadius: '50%',
           background: cover
             ? `url(${cover}) center/cover`
-            : 'conic-gradient(from 30deg, #e8a0c0, #c0a0e8, #a0c8e8, #a0e8c0, #e8d0a0, #e8a0a0, #e8a0c0)',
-        }} />
-
-        {/* Iridescent rainbow overlay */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          borderRadius: '50%',
-          background: 'conic-gradient(from 0deg, rgba(255,100,150,0.15), rgba(150,100,255,0.15), rgba(100,200,255,0.15), rgba(100,255,150,0.15), rgba(255,220,100,0.15), rgba(255,100,150,0.15))',
-          mixBlendMode: 'screen',
+            : 'radial-gradient(circle, #e0e0e0 0%, #c8c8c8 40%, #b0b0b0 100%)',
         }} />
 
         {/* Groove rings */}
