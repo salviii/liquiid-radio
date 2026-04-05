@@ -70,7 +70,7 @@ function PixelVisualizer({ isPlaying, isWidget }: { isPlaying: boolean; isWidget
   useEffect(() => {
     if (!containerRef.current) return
     let analyser: AnalyserNode | null = null
-    let dataArr: Uint8Array | null = null
+    let dataArr: Uint8Array<ArrayBuffer> | null = null
 
     try {
       const audio = document.querySelector('audio')
