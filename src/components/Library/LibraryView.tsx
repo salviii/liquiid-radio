@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { usePlayerStore } from '../../store/playerStore'
 import { TrackList } from './TrackList'
 import { AddTrackModal } from './AddTrackModal'
-import { Plus, LayoutGrid, List, Share2, Trash2 } from 'lucide-react'
+import { Plus, LayoutGrid, List, Share2, Trash2, Save } from 'lucide-react'
 
 export function LibraryView() {
   const tracks = usePlayerStore((s) => s.tracks)
@@ -22,11 +22,16 @@ export function LibraryView() {
     })
   }
 
-  const filteredTracks = useMemo(() => {
-    const result = [...tracks]
-    result.sort((a, b) => b.addedAt - a.addedAt)
-    return result
-  }, [tracks])
+  const reorderLibrary = usePlayerStore((s) => s.reorderLibrary)
+  const createPlaylist = usePlayerStore((s) => s.createPlaylist)
+  const addToPlaylist = usePlayerStore((s) => s.addToPlaylist)
+
+  function handleSaveAsPlaylist() {
+    const name = prompt('playlist name:')
+    if (!name?.trim()) return
+    const playlist = createPlaylist(name.trim())
+    tracks.forEach(t => addToPlaylist(playlist.id, t.id))
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'auto', minHeight: 0 }}>
@@ -92,6 +97,16 @@ export function LibraryView() {
                 <Share2 size={11} /> {shareCopied ? 'copied!' : 'share'}
               </button>
             )}
+            {tracks.length > 0 && (
+              <button
+                onClick={handleSaveAsPlaylist}
+                className="btn-outline flex items-center gap-1"
+                style={{ padding: '4px 10px', fontSize: '9px' }}
+                title="Save library as playlist"
+              >
+                <Save size={11} /> save
+              </button>
+            )}
           </div>
         </div>
 
@@ -99,7 +114,7 @@ export function LibraryView() {
       </div>
 
       {!showAddModal && <div className="px-3" style={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-        {filteredTracks.length === 0 ? (
+        {tracks.length === 0 ? (
           <div
             onClick={() => setShowAddModal(true)}
             style={{
@@ -136,7 +151,7 @@ export function LibraryView() {
           </div>
         ) : (
           <>
-            <TrackList tracks={filteredTracks} viewMode={viewMode} />
+            <TrackList tracks={tracks} viewMode={viewMode} onReorder={reorderLibrary} />
             {/* Empty space below tracks — tap to add */}
             <div
               onClick={() => setShowAddModal(true)}

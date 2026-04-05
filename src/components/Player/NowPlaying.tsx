@@ -1,6 +1,34 @@
-import { useRef, useCallback, useState } from 'react'
+import { useRef, useCallback, useState, useMemo } from 'react'
 import { usePlayerStore } from '../../store/playerStore'
 import { formatTime } from '../../lib/utils'
+
+const WAVEFORM_BARS = 80
+
+/** Deterministic pseudo-waveform from a seed string */
+function generateWaveform(seed: string, bars: number): number[] {
+  // Simple hash → PRNG
+  let h = 0
+  for (let i = 0; i < seed.length; i++) {
+    h = ((h << 5) - h + seed.charCodeAt(i)) | 0
+  }
+  const next = () => {
+    h = (h * 1103515245 + 12345) & 0x7fffffff
+    return h / 0x7fffffff
+  }
+  const raw: number[] = []
+  for (let i = 0; i < bars; i++) {
+    // Blend two randoms for smoother shapes
+    const v = (next() + next()) / 2
+    raw.push(v)
+  }
+  // Smooth pass — average with neighbors
+  return raw.map((v, i) => {
+    const prev = raw[i - 1] ?? v
+    const nxt = raw[i + 1] ?? v
+    const smoothed = prev * 0.2 + v * 0.6 + nxt * 0.2
+    return 0.12 + smoothed * 0.88 // min 12%, max 100%
+  })
+}
 import {
   Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1,
   X, LogIn, ExternalLink, SlidersHorizontal, ListMusic,
@@ -37,6 +65,10 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
 
   const pct = duration > 0 ? (progress / duration) * 100 : 0
   const cover = currentTrack?.coverArt
+  const waveform = useMemo(
+    () => generateWaveform(currentTrack?.id || currentTrack?.title || 'empty', WAVEFORM_BARS),
+    [currentTrack?.id, currentTrack?.title],
+  )
 
   // Scrub helpers
   const calcSeekTime = useCallback((clientX: number) => {
@@ -148,9 +180,9 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
           <div
             ref={scrubRef}
             style={{
-              height: '12px',
+              height: '28px',
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'flex-end',
               cursor: 'pointer',
               touchAction: 'none',
             }}
@@ -161,29 +193,35 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
           >
             <div style={{
               width: '100%',
-              height: '2px',
-              borderRadius: '1px',
-              background: 'var(--theme-border)',
+              height: '24px',
               position: 'relative',
+              display: 'flex',
+              alignItems: 'flex-end',
+              gap: '1px',
             }}>
-              <div style={{
-                height: '100%',
-                borderRadius: '1px',
-                width: `${pct}%`,
-                background: 'var(--theme-accent)',
-                transition: isDragging.current ? 'none' : 'width 0.15s linear',
-              }} />
+              {waveform.map((h, i) => {
+                const barPct = ((i + 0.5) / WAVEFORM_BARS) * 100
+                return (
+                  <div key={i} style={{
+                    flex: 1,
+                    height: `${h * 100}%`,
+                    borderRadius: '1px',
+                    background: barPct <= pct ? 'var(--theme-accent)' : 'var(--theme-border)',
+                    transition: isDragging.current ? 'none' : 'background 0.1s',
+                    minWidth: 0,
+                  }} />
+                )
+              })}
               {duration > 0 && (
                 <div style={{
                   position: 'absolute',
-                  top: '50%',
+                  top: 0,
+                  bottom: 0,
                   left: `${pct}%`,
-                  transform: 'translate(-50%, -50%)',
-                  width: '7px',
-                  height: '7px',
-                  borderRadius: '50%',
+                  width: '2px',
+                  transform: 'translateX(-50%)',
                   background: 'var(--theme-accent)',
-                  opacity: 0.9,
+                  opacity: 0.7,
                 }} />
               )}
             </div>
@@ -261,6 +299,22 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
           }}>
             {repeat === 'one' ? <Repeat1 size={14} /> : <Repeat size={14} />}
           </button>
+
+          {sourceUrl && (
+            <a
+              href={sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: 'none', border: 'none', padding: '6px', cursor: 'pointer',
+                color: 'var(--theme-text-muted)', transition: 'color 0.15s',
+                display: 'flex', alignItems: 'center',
+              }}
+              title="Open source"
+            >
+              <ExternalLink size={14} />
+            </a>
+          )}
         </div>
 
         {/* ── Login prompt overlay ── */}
@@ -405,13 +459,14 @@ function MiniDisc({ cover, isPlaying, isWidget }: { cover?: string; isPlaying: b
       aspectRatio: '1 / 1',
     }}>
       <div
-        className={isPlaying ? 'animate-[spin_3s_linear_infinite]' : ''}
+        className="animate-[spin_3s_linear_infinite]"
         style={{
           width: '100%',
           height: '100%',
           borderRadius: '50%',
           position: 'relative',
           overflow: 'hidden',
+          animationPlayState: isPlaying ? 'running' : 'paused',
         }}
       >
         {/* Disc face — album art or iridescent */}

@@ -32,6 +32,46 @@ interface AuthContextValue {
 
 export const AuthContext = createContext<AuthContextValue | null>(null)
 
+function CookieConsent() {
+  const [visible, setVisible] = useState(() => !localStorage.getItem('cookies-accepted'))
+  if (!visible) return null
+  return (
+    <div style={{
+      position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999,
+      background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(8px)',
+      padding: '14px 20px', display: 'flex', alignItems: 'center',
+      justifyContent: 'space-between', gap: '12px',
+      fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.8)',
+      letterSpacing: '0.04em',
+    }}>
+      <span>this site uses local storage to save your library and preferences.</span>
+      <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+        <button
+          onClick={() => { localStorage.setItem('cookies-accepted', 'true'); setVisible(false) }}
+          style={{
+            fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.08em',
+            color: '#000', background: 'var(--theme-accent)', border: 'none',
+            borderRadius: '4px', padding: '6px 14px', cursor: 'pointer', fontWeight: 600,
+          }}
+        >
+          accept
+        </button>
+        <button
+          onClick={() => setVisible(false)}
+          style={{
+            fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.08em',
+            color: 'rgba(255,255,255,0.5)', background: 'none',
+            border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px',
+            padding: '6px 14px', cursor: 'pointer',
+          }}
+        >
+          dismiss
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function App() {
   const { seekTo } = useAudioEngine()
   useMetadataReader()
@@ -248,6 +288,7 @@ function App() {
         </div>
 
         {showMiniPlayer && <MiniPlayer onClose={() => setShowMiniPlayer(false)} />}
+        <CookieConsent />
       </div>
     </AuthContext.Provider>
   )

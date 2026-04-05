@@ -1,6 +1,6 @@
 import { usePlayerStore } from '../../store/playerStore'
 import { formatTime } from '../../lib/utils'
-import { Play, Pause, MoreHorizontal, Plus, Trash2, ListPlus, LinkIcon, X } from 'lucide-react'
+import { Play, Pause, MoreHorizontal, Plus, Trash2, ListPlus, LinkIcon, X, GripVertical } from 'lucide-react'
 import { useState, useRef } from 'react'
 import type { Track } from '../../types'
 
@@ -27,6 +27,7 @@ interface TrackListProps {
   tracks: Track[]
   viewMode?: 'list' | 'grid'
   playlistId?: string  // If set, shows "remove from playlist" instead of "delete from library"
+  onReorder?: (fromIndex: number, toIndex: number) => void
 }
 
 function RelinkModal({ track, onClose }: { track: Track; onClose: () => void }) {
@@ -140,12 +141,14 @@ function RelinkModal({ track, onClose }: { track: Track; onClose: () => void }) 
   )
 }
 
-export function TrackList({ tracks, viewMode = 'list', playlistId }: TrackListProps) {
+export function TrackList({ tracks, viewMode = 'list', playlistId, onReorder }: TrackListProps) {
   const currentTrack = usePlayerStore((s) => s.currentTrack)
   const isPlaying = usePlayerStore((s) => s.isPlaying)
   const play = usePlayerStore((s) => s.play)
   const pause = usePlayerStore((s) => s.pause)
   const setQueue = usePlayerStore((s) => s.setQueue)
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const removeTrack = usePlayerStore((s) => s.removeTrack)
   const removeFromPlaylist = usePlayerStore((s) => s.removeFromPlaylist)
   const addToQueue = usePlayerStore((s) => s.addToQueue)
@@ -352,16 +355,48 @@ export function TrackList({ tracks, viewMode = 'list', playlistId }: TrackListPr
             <div
               key={t.id}
               className="group flex items-center gap-4 px-4 py-4 cursor-pointer transition-colors"
+              draggable={!!onReorder}
+              onDragStart={(e) => {
+                setDragIndex(i)
+                e.dataTransfer.effectAllowed = 'move'
+              }}
+              onDragOver={(e) => {
+                e.preventDefault()
+                e.dataTransfer.dropEffect = 'move'
+                setDragOverIndex(i)
+              }}
+              onDragLeave={() => { if (dragOverIndex === i) setDragOverIndex(null) }}
+              onDrop={(e) => {
+                e.preventDefault()
+                if (dragIndex !== null && dragIndex !== i && onReorder) {
+                  onReorder(dragIndex, i)
+                }
+                setDragIndex(null)
+                setDragOverIndex(null)
+              }}
+              onDragEnd={() => { setDragIndex(null); setDragOverIndex(null) }}
               style={{
                 borderBottom: '1px solid var(--theme-border)',
-                background: active
+                borderTop: dragOverIndex === i && dragIndex !== null && dragIndex !== i
+                  ? '2px solid var(--theme-accent)' : undefined,
+                background: dragIndex === i
+                  ? 'color-mix(in srgb, var(--theme-accent) 5%, transparent)'
+                  : active
                   ? 'color-mix(in srgb, var(--theme-accent) 10%, transparent)'
                   : 'transparent',
                 borderLeft: active ? '3px solid var(--theme-accent)' : '3px solid transparent',
-                opacity: isDead ? 0.45 : 1,
+                opacity: isDead ? 0.45 : dragIndex === i ? 0.5 : 1,
               }}
               onClick={() => handleClick(t, i)}
             >
+              {/* Drag handle */}
+              {onReorder && (
+                <div className="flex-shrink-0 opacity-0 group-hover:opacity-40 transition-opacity cursor-grab active:cursor-grabbing"
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
+                  <GripVertical size={14} />
+                </div>
+              )}
               {/* LED / source badge indicator */}
               <div className="flex-shrink-0 flex justify-center" style={{ width: '28px' }}>
                 {isDead ? (
@@ -377,8 +412,9 @@ export function TrackList({ tracks, viewMode = 'list', playlistId }: TrackListPr
                         width: 14,
                         height: 14,
                         objectFit: 'contain',
-                        opacity: 0.6,
+                        opacity: 0.5,
                         borderRadius: '2px',
+                        filter: 'grayscale(1) contrast(0.6) brightness(1.2)',
                       }}
                     />
                   ) : (
@@ -386,10 +422,10 @@ export function TrackList({ tracks, viewMode = 'list', playlistId }: TrackListPr
                       fontFamily: 'var(--font-mono)',
                       fontSize: '7px',
                       letterSpacing: '0.08em',
-                      color: badge.color,
+                      color: 'var(--theme-text-muted)',
                       padding: '1px 3px',
                       borderRadius: '2px',
-                      border: `1px solid ${badge.color}`,
+                      border: '1px solid var(--theme-border)',
                       opacity: 0.55,
                       lineHeight: '10px',
                       whiteSpace: 'nowrap',

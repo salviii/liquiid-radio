@@ -54,6 +54,7 @@ interface PlayerState {
   addTrack: (track: Omit<Track, 'id' | 'addedAt'>) => Track
   removeTrack: (id: string) => void
   clearLibrary: () => void
+  reorderLibrary: (fromIndex: number, toIndex: number) => void
   updateTrack: (id: string, updates: Partial<Track>) => void
   addSource: (source: Omit<AudioSource, 'id' | 'lastScanned' | 'trackCount'>) => AudioSource
   removeSource: (id: string) => void
@@ -224,14 +225,26 @@ export const usePlayerStore = create<PlayerState>()(
         })),
       })),
 
-      clearLibrary: () => set({
-        tracks: [],
-        currentTrack: null,
-        isPlaying: false,
-        progress: 0,
-        duration: 0,
-        queue: [],
-        queueIndex: -1,
+      clearLibrary: () => set((s) => {
+        // Keep tracks referenced by any playlist
+        const playlistTrackIds = new Set(s.playlists.flatMap(p => p.tracks))
+        const keptTracks = s.tracks.filter(t => playlistTrackIds.has(t.id))
+        return {
+          tracks: keptTracks,
+          currentTrack: null,
+          isPlaying: false,
+          progress: 0,
+          duration: 0,
+          queue: [],
+          queueIndex: -1,
+        }
+      }),
+
+      reorderLibrary: (fromIndex, toIndex) => set((s) => {
+        const tracks = [...s.tracks]
+        const [moved] = tracks.splice(fromIndex, 1)
+        tracks.splice(toIndex, 0, moved)
+        return { tracks }
       }),
 
       updateTrack: (id, updates) => set((s) => ({
