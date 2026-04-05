@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { usePlayerStore } from '../../store/playerStore'
 import { TrackList } from './TrackList'
 import { AddTrackModal } from './AddTrackModal'
