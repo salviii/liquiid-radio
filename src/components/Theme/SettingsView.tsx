@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react'
 import { usePlayerStore } from '../../store/playerStore'
-import { Palette, Sun, Moon, Disc3, Waves, Sparkles, Music, Heart } from 'lucide-react'
+import { Palette, Waves, Music } from 'lucide-react'
 import { AuthPanel } from '../Auth/AuthPanel'
 import { AuthContext } from '../../App'
 import {
@@ -10,15 +10,15 @@ import {
 } from '../../lib/spotifyAuth'
 
 const THEMES = [
-  { id: 'default', name: 'Paper', description: 'clean white, no color', icon: Sun, preview: '#fafafa' },
-  { id: 'dark', name: 'Terminal', description: 'green on black, crt glow', icon: Moon, preview: '#0a0a0a' },
-  { id: 'midnight', name: 'Bruise', description: 'deep indigo, violet', icon: Waves, preview: '#0c0a14' },
-  { id: 'vinyl', name: 'Rust', description: 'ochre, burnt orange', icon: Disc3, preview: '#1c1510' },
-  { id: 'ocean', name: 'Ocean', description: 'calm blue, airy light', icon: Waves, preview: '#f0f4f8' },
-  { id: 'void', name: 'Void', description: 'pure black, red accent', icon: Moon, preview: '#000000' },
-  { id: 'chameleon', name: 'Chameleon', description: 'light + album art colors', icon: Sparkles, preview: 'linear-gradient(135deg, #e8a4a4, #a4c8e8, #a4e8b4)' },
-  { id: 'chameleon-dark', name: 'Chameleon Dark', description: 'dark + album art colors', icon: Sparkles, preview: 'linear-gradient(135deg, #3a1a1a, #1a2a3a, #1a3a1a)' },
-  { id: 'y2k', name: 'Y2K', description: 'bubblegum pop, glossy pink', icon: Heart, preview: 'linear-gradient(135deg, #ff69b4, #e8a0ff, #a0d4ff)' },
+  { id: 'default', name: 'Paper', description: 'clean white, no color' },
+  { id: 'dark', name: 'Terminal', description: 'green on black, crt glow' },
+  { id: 'midnight', name: 'Bruise', description: 'deep indigo, violet' },
+  { id: 'vinyl', name: 'Rust', description: 'ochre, burnt orange' },
+  { id: 'ocean', name: 'Ocean', description: 'calm blue, airy light' },
+  { id: 'void', name: 'Void', description: 'pure black, red accent' },
+  { id: 'chameleon', name: 'Chameleon', description: 'light + album art colors' },
+  { id: 'chameleon-dark', name: 'Chameleon Dark', description: 'dark + album art colors' },
+  { id: 'y2k', name: 'Y2K', description: 'bubblegum pop, glossy pink' },
 ]
 
 export function SettingsView() {
@@ -50,36 +50,32 @@ export function SettingsView() {
             </h3>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            {THEMES.map(t => {
-              const isActive = theme === t.id
-              const Icon = t.icon
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => setTheme(t.id)}
-                  className="panel p-4 text-left transition-all hover:scale-[1.02] active:scale-[0.98]"
-                  style={{
-                    borderRadius: '4px',
-                    border: `2px solid ${isActive ? 'var(--theme-accent)' : 'var(--theme-border)'}`,
-                  }}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-8 h-8 flex items-center justify-center"
-                      style={{ background: t.preview, borderRadius: '4px', border: '1px solid var(--theme-border)', overflow: 'hidden' }}>
-                      <Icon size={16} style={{ color: isActive ? 'var(--theme-accent)' : '#999' }} />
-                    </div>
-                    {/* LED indicator for active theme */}
-                    {isActive && (
-                      <span className="led active" />
-                    )}
-                  </div>
-                  <p className="text-sm" style={{ color: 'var(--theme-text)', fontFamily: 'var(--font-display)', fontWeight: 600 }}>{t.name}</p>
-                  <p className="knob-label mt-0.5">{t.description}</p>
-                </button>
-              )
-            })}
-          </div>
+          <select
+            value={theme}
+            onChange={(e) => setTheme(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px 12px',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '12px',
+              letterSpacing: '0.06em',
+              color: 'var(--theme-text)',
+              background: 'var(--theme-bg)',
+              border: '1px solid var(--theme-border)',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              appearance: 'none',
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 12px center',
+            }}
+          >
+            {THEMES.map(t => (
+              <option key={t.id} value={t.id}>
+                {t.name} — {t.description}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Accent color picker */}
@@ -139,20 +135,6 @@ export function SettingsView() {
           <AuthPanelConnected />
         </div>
 
-        {/* About — panel-section inset */}
-        <div className="panel-section p-6" style={{ borderRadius: '4px' }}>
-          <h3 className="text-sm mb-2" style={{ color: 'var(--theme-text)', fontFamily: 'var(--font-display)', fontWeight: 700 }}>
-            About hurakan
-          </h3>
-          <p className="text-sm leading-relaxed" style={{ color: 'var(--theme-text-secondary)' }}>
-            A decentralized audio player and library manager. Your music lives where you put it —
-            hurakan just brings it all together. Link any audio URL, build playlists, share with friends.
-            No uploads, no storage limits, no middleman.
-          </p>
-          <p className="knob-label mt-3" style={{ fontVariantNumeric: 'tabular-nums' }}>
-            v0.1.0 &middot; Made with care
-          </p>
-        </div>
       </div>
     </div>
   )
@@ -285,7 +267,7 @@ function SpotifyConnectSection() {
             marginBottom: '10px',
             lineHeight: 1.5,
           }}>
-            connect your spotify premium account to play full tracks through hurakan.
+            connect your spotify premium account to play full tracks through liquiid radio.
           </p>
           <button
             onClick={() => startSpotifyAuth()}

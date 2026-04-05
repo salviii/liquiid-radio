@@ -324,7 +324,7 @@ export function useAudioEngine() {
       // Reuse existing SDK player or create new one
       if (!spSdkRef.current) {
         console.log('[spotify-sdk] Creating SDK player...')
-        spSdkRef.current = await createSpotifySDKPlayer('hurakan')
+        spSdkRef.current = await createSpotifySDKPlayer('liquiid radio')
       }
 
       const sdk = spSdkRef.current

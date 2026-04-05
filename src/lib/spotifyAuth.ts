@@ -375,7 +375,7 @@ export interface SpotifySDKPlayer {
   onError: (cb: (err: any) => void) => void
 }
 
-export async function createSpotifySDKPlayer(name: string = 'hurakan'): Promise<SpotifySDKPlayer> {
+export async function createSpotifySDKPlayer(name: string = 'liquiid radio'): Promise<SpotifySDKPlayer> {
   await loadPlaybackSDK()
 
   const token = await getAccessToken()

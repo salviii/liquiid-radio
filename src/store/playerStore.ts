@@ -28,6 +28,7 @@ interface PlayerState {
   currentView: ViewMode
   sidebarOpen: boolean
   theme: string
+  visualMode: 'disc' | 'cover' | 'visualizer' | 'lava'
 
   // Login prompt for embed failures
   loginPrompt: { service: 'youtube' | 'spotify' | 'soundcloud'; url: string } | null
@@ -86,6 +87,7 @@ interface PlayerState {
   setView: (view: ViewMode) => void
   toggleSidebar: () => void
   setTheme: (theme: string) => void
+  setVisualMode: (mode: 'disc' | 'cover' | 'visualizer' | 'lava') => void
 }
 
 export const usePlayerStore = create<PlayerState>()(
@@ -108,6 +110,7 @@ export const usePlayerStore = create<PlayerState>()(
       currentView: 'library',
       sidebarOpen: true,
       theme: 'default',
+      visualMode: 'disc',
       loginPrompt: null,
       crossfade: 0,
 
@@ -133,6 +136,16 @@ export const usePlayerStore = create<PlayerState>()(
         const state = get()
         if (state.currentTrack) {
           set({ isPlaying: !state.isPlaying })
+        } else if (state.tracks.length > 0) {
+          // Nothing selected — start playing from the top of the library
+          const queue = [...state.tracks]
+          set({
+            currentTrack: queue[0],
+            isPlaying: true,
+            progress: 0,
+            queue,
+            queueIndex: 0,
+          })
         }
       },
 
@@ -350,6 +363,7 @@ export const usePlayerStore = create<PlayerState>()(
         document.documentElement.setAttribute('data-theme', theme === 'default' ? '' : theme)
         set({ theme })
       },
+      setVisualMode: (mode) => set({ visualMode: mode }),
     }),
     {
       name: 'hurakan-player',
@@ -365,6 +379,7 @@ export const usePlayerStore = create<PlayerState>()(
         shuffle: state.shuffle,
         repeat: state.repeat,
         theme: state.theme,
+        visualMode: state.visualMode,
         crossfade: state.crossfade,
       }),
     }

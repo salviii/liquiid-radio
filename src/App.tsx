@@ -54,18 +54,7 @@ function CookieConsent() {
             borderRadius: '4px', padding: '6px 14px', cursor: 'pointer', fontWeight: 600,
           }}
         >
-          accept
-        </button>
-        <button
-          onClick={() => setVisible(false)}
-          style={{
-            fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.08em',
-            color: 'rgba(255,255,255,0.5)', background: 'none',
-            border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px',
-            padding: '6px 14px', cursor: 'pointer',
-          }}
-        >
-          dismiss
+          okay
         </button>
       </div>
     </div>

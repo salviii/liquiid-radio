@@ -103,7 +103,7 @@ export function MiniPlayer({ onClose }: MiniPlayerProps) {
         {/* Close / minimize buttons */}
         <div className="flex items-center justify-between px-3 pt-2 pb-1">
           <span className="text-[8px] uppercase tracking-[0.2em] font-medium" style={{ color: '#7a7262' }}>
-            hurakan mini
+            liquiid mini
           </span>
           <button onClick={onClose} className="p-1 rounded-lg transition-colors"
             style={{ color: '#7a7262' }}>

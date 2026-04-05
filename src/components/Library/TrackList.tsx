@@ -479,9 +479,9 @@ export function TrackList({ tracks, viewMode = 'list', playlistId, onReorder }: 
                   className="truncate"
                   style={{
                     fontFamily: 'var(--font-mono)',
-                    fontSize: '11px',
+                    fontSize: '13px',
                     fontWeight: 500,
-                    letterSpacing: '0.08em',
+                    letterSpacing: '0.06em',
                     
                     color: isDead ? 'var(--theme-text-muted)' : active ? 'var(--theme-accent)' : 'var(--theme-text)',
                     textDecoration: isDead ? 'line-through' : 'none',
@@ -493,9 +493,9 @@ export function TrackList({ tracks, viewMode = 'list', playlistId, onReorder }: 
                   className="truncate mt-1"
                   style={{
                     fontFamily: 'var(--font-mono)',
-                    fontSize: '9px',
-                    letterSpacing: '0.1em',
-                    
+                    fontSize: '11px',
+                    letterSpacing: '0.08em',
+
                     color: 'var(--theme-text-secondary)',
                   }}
                 >
@@ -507,9 +507,9 @@ export function TrackList({ tracks, viewMode = 'list', playlistId, onReorder }: 
               <span
                 style={{
                   fontFamily: 'var(--font-mono)',
-                  fontSize: '10px',
+                  fontSize: '11px',
                   fontVariantNumeric: 'tabular-nums',
-                  letterSpacing: '0.1em',
+                  letterSpacing: '0.08em',
                   color: 'var(--theme-text-muted)',
                 }}
               >

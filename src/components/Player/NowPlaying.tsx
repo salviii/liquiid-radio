@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState, useMemo } from 'react'
+import { useRef, useCallback, useState, useMemo, useEffect } from 'react'
 import { usePlayerStore } from '../../store/playerStore'
 import { formatTime } from '../../lib/utils'
 
@@ -31,8 +31,174 @@ function generateWaveform(seed: string, bars: number): number[] {
 }
 import {
   Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1,
-  X, LogIn, ExternalLink, SlidersHorizontal, ListMusic,
+  X, LogIn, ExternalLink, SlidersHorizontal, ListMusic, Eye,
 } from 'lucide-react'
+
+const VISUAL_MODES = ['disc', 'cover', 'visualizer', 'lava'] as const
+
+// ── Cover View ──
+function CoverView({ cover, isWidget }: { cover?: string; isWidget: boolean }) {
+  return (
+    <div style={{
+      position: 'relative', zIndex: 2,
+      width: isWidget ? '100px' : '60%', maxWidth: '220px', aspectRatio: '1 / 1',
+      borderRadius: '8px', overflow: 'hidden',
+      background: cover ? `url(${cover}) center/cover` : 'var(--theme-border)',
+    }}>
+      {!cover && (
+        <img
+          src="https://raw.githubusercontent.com/salviii/salviii.github.io/master/assets/sun%20dark.png"
+          alt="" style={{
+            position: 'absolute', top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '50%', height: '50%', objectFit: 'contain', opacity: 0.3,
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+// ── 8-bit Pixel Visualizer ──
+function PixelVisualizer({ isPlaying, isWidget }: { isPlaying: boolean; isWidget: boolean }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const animRef = useRef<number>(0)
+  const analyserRef = useRef<AnalyserNode | null>(null)
+  const dataRef = useRef<Uint8Array | null>(null)
+
+  useEffect(() => {
+    try {
+      const audio = document.querySelector('audio')
+      if (audio) {
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+        const source = ctx.createMediaElementSource(audio)
+        const analyser = ctx.createAnalyser()
+        analyser.fftSize = 64
+        analyser.smoothingTimeConstant = 0.92
+        source.connect(analyser)
+        analyser.connect(ctx.destination)
+        analyserRef.current = analyser
+        dataRef.current = new Uint8Array(analyser.frequencyBinCount)
+      }
+    } catch { /* Howler owns the audio context — use fallback */ }
+
+    return () => { cancelAnimationFrame(animRef.current) }
+  }, [])
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const BARS = 16
+    const PIXELS_HIGH = 12
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--theme-accent').trim() || '#3DFF6A'
+
+    function draw() {
+      if (!ctx || !canvas) return
+      const w = canvas.width
+      const h = canvas.height
+      ctx.clearRect(0, 0, w, h)
+
+      const barW = Math.floor(w / BARS) - 2
+      const pixH = Math.floor(h / PIXELS_HIGH)
+
+      const values: number[] = []
+      if (analyserRef.current && dataRef.current && isPlaying) {
+        analyserRef.current.getByteFrequencyData(dataRef.current)
+        for (let i = 0; i < BARS; i++) {
+          const idx = Math.floor((i / BARS) * dataRef.current.length)
+          values.push(dataRef.current[idx] / 255)
+        }
+      } else {
+        // Fallback sine wave animation
+        const t = Date.now() / 1000
+        for (let i = 0; i < BARS; i++) {
+          const v = isPlaying
+            ? 0.25 + 0.35 * Math.sin(t * 1.2 + i * 0.5) * Math.sin(t * 0.7 + i * 0.3)
+            : 0.05 + 0.03 * Math.sin(t * 0.3 + i * 0.2)
+          values.push(Math.max(0, Math.min(1, v)))
+        }
+      }
+
+      for (let i = 0; i < BARS; i++) {
+        const litPixels = Math.round(values[i] * PIXELS_HIGH)
+        const x = i * (barW + 2) + 1
+        for (let p = 0; p < litPixels; p++) {
+          const y = h - (p + 1) * pixH
+          const ratio = p / PIXELS_HIGH
+          // Green → yellow → red gradient
+          const r = ratio > 0.7 ? 255 : Math.round(ratio * 2.5 * 255)
+          const g = ratio > 0.7 ? Math.round((1 - (ratio - 0.7) * 3.3) * 255) : 255
+          ctx.fillStyle = `rgb(${r},${g},50)`
+          ctx.fillRect(x, y, barW, pixH - 1)
+        }
+      }
+
+      animRef.current = requestAnimationFrame(draw)
+    }
+
+    draw()
+    return () => cancelAnimationFrame(animRef.current)
+  }, [isPlaying])
+
+  const size = isWidget ? 100 : 220
+  return (
+    <div style={{ position: 'relative', zIndex: 2 }}>
+      <canvas
+        ref={canvasRef}
+        width={size}
+        height={size}
+        style={{
+          width: isWidget ? '100px' : '60vw',
+          maxWidth: '220px',
+          aspectRatio: '1 / 1',
+          borderRadius: '8px',
+          background: '#111',
+          imageRendering: 'pixelated',
+        }}
+      />
+    </div>
+  )
+}
+
+// ── Lava Lamp ──
+function LavaLamp({ isPlaying, isWidget }: { isPlaying: boolean; isWidget: boolean }) {
+  return (
+    <div style={{
+      position: 'relative', zIndex: 2,
+      width: isWidget ? '100px' : '60%', maxWidth: '220px', aspectRatio: '1 / 1',
+      borderRadius: '50%', overflow: 'hidden',
+      background: 'var(--theme-bg-secondary)',
+    }}>
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: '50%',
+        background: `
+          radial-gradient(circle at 30% 70%, color-mix(in hsl, var(--theme-accent), transparent 20%) 0%, transparent 50%),
+          radial-gradient(circle at 70% 30%, color-mix(in hsl, var(--theme-accent) 80%, #ff6b6b) 0%, transparent 50%),
+          radial-gradient(circle at 50% 50%, color-mix(in hsl, var(--theme-accent) 60%, #6b6bff) 0%, transparent 60%)
+        `,
+        animation: isPlaying ? 'lava-morph 8s ease-in-out infinite' : 'lava-morph 20s ease-in-out infinite',
+        filter: 'blur(20px) saturate(1.5)',
+      }} />
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: '50%',
+        background: `
+          radial-gradient(circle at 60% 20%, color-mix(in hsl, var(--theme-accent) 70%, #ffaa00) 0%, transparent 40%),
+          radial-gradient(circle at 20% 80%, color-mix(in hsl, var(--theme-accent) 50%, #aa00ff) 0%, transparent 45%)
+        `,
+        animation: isPlaying ? 'lava-morph2 6s ease-in-out infinite' : 'lava-morph2 16s ease-in-out infinite',
+        filter: 'blur(16px) saturate(1.3)',
+        opacity: 0.8,
+      }} />
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: '50%',
+        border: '1px solid rgba(255,255,255,0.08)',
+      }} />
+    </div>
+  )
+}
 
 interface NowPlayingProps {
   onSeek: (time: number) => void
@@ -52,6 +218,8 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
   const shuffle = usePlayerStore((s) => s.shuffle)
   const repeat = usePlayerStore((s) => s.repeat)
   const togglePlay = usePlayerStore((s) => s.togglePlay)
+  const visualMode = usePlayerStore((s) => s.visualMode)
+  const setVisualMode = usePlayerStore((s) => s.setVisualMode)
   const next = usePlayerStore((s) => s.next)
   const previous = usePlayerStore((s) => s.previous)
   const toggleShuffle = usePlayerStore((s) => s.toggleShuffle)
@@ -144,7 +312,10 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
             }} />
           )}
 
-          <MiniDisc cover={cover} isPlaying={isPlaying} isWidget={isWidget} />
+          {visualMode === 'disc' && <MiniDisc cover={cover} isPlaying={isPlaying} isWidget={isWidget} />}
+          {visualMode === 'cover' && <CoverView cover={cover} isWidget={isWidget} />}
+          {visualMode === 'visualizer' && <PixelVisualizer isPlaying={isPlaying} isWidget={isWidget} />}
+          {visualMode === 'lava' && <LavaLamp isPlaying={isPlaying} isWidget={isWidget} />}
         </div>
 
         {/* ── Track info ── */}
@@ -155,17 +326,17 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
           textAlign: 'center',
         }}>
           <p className="truncate" style={{
-            fontSize: '11px',
+            fontSize: '13px',
             color: 'var(--theme-text)',
             letterSpacing: '0.02em',
           }}>
             {currentTrack?.title || 'no track loaded'}
           </p>
           <p className="truncate" style={{
-            fontSize: '9px',
+            fontSize: '11px',
             color: 'var(--theme-text-muted)',
-            letterSpacing: '0.06em',
-            marginTop: '1px',
+            letterSpacing: '0.04em',
+            marginTop: '2px',
           }}>
             {currentTrack?.artist || '\u2014'}
           </p>
@@ -228,14 +399,14 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
           </div>
           <div className="flex justify-between">
             <span style={{
-              fontSize: '8px',
+              fontSize: '10px',
               fontVariantNumeric: 'tabular-nums',
               color: 'var(--theme-text-muted)',
             }}>
               {formatTime(progress)}
             </span>
             <span style={{
-              fontSize: '8px',
+              fontSize: '10px',
               fontVariantNumeric: 'tabular-nums',
               color: 'var(--theme-text-muted)',
             }}>
@@ -254,6 +425,22 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
           gap: isWidget ? '6px' : '12px',
           padding: '2px 0 8px',
         }}>
+          {sourceUrl && (
+            <a
+              href={sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: 'none', border: 'none', padding: '6px', cursor: 'pointer',
+                color: 'var(--theme-text-muted)', transition: 'color 0.15s',
+                display: 'flex', alignItems: 'center',
+              }}
+              title="Open source"
+            >
+              <ExternalLink size={14} />
+            </a>
+          )}
+
           <button onClick={toggleShuffle} style={{
             background: 'none', border: 'none', padding: '6px', cursor: 'pointer',
             color: shuffle ? 'var(--theme-accent)' : 'var(--theme-text-muted)',
@@ -300,21 +487,19 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
             {repeat === 'one' ? <Repeat1 size={14} /> : <Repeat size={14} />}
           </button>
 
-          {sourceUrl && (
-            <a
-              href={sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                background: 'none', border: 'none', padding: '6px', cursor: 'pointer',
-                color: 'var(--theme-text-muted)', transition: 'color 0.15s',
-                display: 'flex', alignItems: 'center',
-              }}
-              title="Open source"
-            >
-              <ExternalLink size={14} />
-            </a>
-          )}
+          <button
+            onClick={() => {
+              const idx = VISUAL_MODES.indexOf(visualMode)
+              setVisualMode(VISUAL_MODES[(idx + 1) % VISUAL_MODES.length])
+            }}
+            title={`Visual: ${visualMode}`}
+            style={{
+              background: 'none', border: 'none', padding: '6px', cursor: 'pointer',
+              color: 'var(--theme-text-muted)', transition: 'color 0.15s',
+            }}
+          >
+            <Eye size={14} />
+          </button>
         </div>
 
         {/* ── Login prompt overlay ── */}
@@ -350,7 +535,7 @@ export function NowPlaying({ onSeek }: NowPlayingProps) {
               textAlign: 'center', lineHeight: 1.5, maxWidth: '240px',
             }}>
               {loginPrompt.service === 'spotify'
-                ? 'connect your spotify account to play this track through hurakan.'
+                ? 'connect your spotify account to play this track through liquiid radio.'
                 : loginPrompt.service === 'soundcloud'
                 ? 'soundcloud requires you to be logged in to stream tracks here.'
                 : 'this youtube track needs you to be logged in to play.'
@@ -469,7 +654,7 @@ function MiniDisc({ cover, isPlaying, isWidget }: { cover?: string; isPlaying: b
           animationPlayState: isPlaying ? 'running' : 'paused',
         }}
       >
-        {/* Disc face — album art or iridescent */}
+        {/* Disc face — album art or default symbol */}
         <div style={{
           position: 'absolute',
           inset: 0,
@@ -478,6 +663,23 @@ function MiniDisc({ cover, isPlaying, isWidget }: { cover?: string; isPlaying: b
             ? `url(${cover}) center/cover`
             : 'radial-gradient(circle, #e0e0e0 0%, #c8c8c8 40%, #b0b0b0 100%)',
         }} />
+        {!cover && (
+          <img
+            src="https://raw.githubusercontent.com/salviii/salviii.github.io/master/assets/sun%20dark.png"
+            alt=""
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '50%',
+              height: '50%',
+              objectFit: 'contain',
+              opacity: 0.3,
+              pointerEvents: 'none',
+            }}
+          />
+        )}
 
         {/* Groove rings */}
         <div style={{

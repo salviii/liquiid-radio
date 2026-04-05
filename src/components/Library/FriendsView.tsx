@@ -58,7 +58,7 @@ export function FriendsView() {
                 borderRadius: '3px',
                 border: '1px solid var(--theme-border)',
               }}>
-              hurakan.app/u/your-username
+              liquiidradio.app/u/your-username
             </code>
             <button className="btn-outline p-2" style={{ color: 'var(--theme-accent)' }}>
               <Copy size={16} />

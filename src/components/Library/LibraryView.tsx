@@ -40,8 +40,8 @@ export function LibraryView() {
       <div className="px-3 pt-3 pb-2">
         <div className="flex items-center justify-between mb-2">
           <h2 style={{
-            fontSize: '10px',
-            letterSpacing: '0.15em',
+            fontSize: '12px',
+            letterSpacing: '0.12em',
             color: 'var(--theme-text)',
           }}>
             library
