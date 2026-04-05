@@ -59,144 +59,240 @@ function CoverView({ cover, isWidget }: { cover?: string; isWidget: boolean }) {
   )
 }
 
-// ── 8-bit Pixel Visualizer ──
+// ── 8-bit Pixel Visualizer (p5.js) ──
 function PixelVisualizer({ isPlaying, isWidget }: { isPlaying: boolean; isWidget: boolean }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const animRef = useRef<number>(0)
-  const analyserRef = useRef<AnalyserNode | null>(null)
-  const dataRef = useRef<Uint8Array | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const p5Ref = useRef<any>(null)
+  const playingRef = useRef(isPlaying)
+
+  useEffect(() => { playingRef.current = isPlaying }, [isPlaying])
 
   useEffect(() => {
+    if (!containerRef.current) return
+    let analyser: AnalyserNode | null = null
+    let dataArr: Uint8Array | null = null
+
     try {
       const audio = document.querySelector('audio')
       if (audio) {
-        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
-        const source = ctx.createMediaElementSource(audio)
-        const analyser = ctx.createAnalyser()
+        const actx = new (window.AudioContext || (window as any).webkitAudioContext)()
+        const source = actx.createMediaElementSource(audio)
+        analyser = actx.createAnalyser()
         analyser.fftSize = 64
         analyser.smoothingTimeConstant = 0.92
         source.connect(analyser)
-        analyser.connect(ctx.destination)
-        analyserRef.current = analyser
-        dataRef.current = new Uint8Array(analyser.frequencyBinCount)
+        analyser.connect(actx.destination)
+        dataArr = new Uint8Array(analyser.frequencyBinCount)
       }
-    } catch { /* Howler owns the audio context — use fallback */ }
+    } catch { /* Howler owns audio context */ }
 
-    return () => { cancelAnimationFrame(animRef.current) }
-  }, [])
+    import('p5').then(({ default: p5 }) => {
+      const sketch = (p: any) => {
+        const BARS = 16
+        const PIXELS_HIGH = 12
+        const size = isWidget ? 100 : 220
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    const BARS = 16
-    const PIXELS_HIGH = 12
-    const accent = getComputedStyle(document.documentElement).getPropertyValue('--theme-accent').trim() || '#3DFF6A'
-
-    function draw() {
-      if (!ctx || !canvas) return
-      const w = canvas.width
-      const h = canvas.height
-      ctx.clearRect(0, 0, w, h)
-
-      const barW = Math.floor(w / BARS) - 2
-      const pixH = Math.floor(h / PIXELS_HIGH)
-
-      const values: number[] = []
-      if (analyserRef.current && dataRef.current && isPlaying) {
-        analyserRef.current.getByteFrequencyData(dataRef.current)
-        for (let i = 0; i < BARS; i++) {
-          const idx = Math.floor((i / BARS) * dataRef.current.length)
-          values.push(dataRef.current[idx] / 255)
+        p.setup = () => {
+          p.createCanvas(size, size)
+          p.noSmooth()
+          p.frameRate(30)
         }
-      } else {
-        // Fallback sine wave animation
-        const t = Date.now() / 1000
-        for (let i = 0; i < BARS; i++) {
-          const v = isPlaying
-            ? 0.25 + 0.35 * Math.sin(t * 1.2 + i * 0.5) * Math.sin(t * 0.7 + i * 0.3)
-            : 0.05 + 0.03 * Math.sin(t * 0.3 + i * 0.2)
-          values.push(Math.max(0, Math.min(1, v)))
-        }
-      }
 
-      for (let i = 0; i < BARS; i++) {
-        const litPixels = Math.round(values[i] * PIXELS_HIGH)
-        const x = i * (barW + 2) + 1
-        for (let p = 0; p < litPixels; p++) {
-          const y = h - (p + 1) * pixH
-          const ratio = p / PIXELS_HIGH
-          // Green → yellow → red gradient
-          const r = ratio > 0.7 ? 255 : Math.round(ratio * 2.5 * 255)
-          const g = ratio > 0.7 ? Math.round((1 - (ratio - 0.7) * 3.3) * 255) : 255
-          ctx.fillStyle = `rgb(${r},${g},50)`
-          ctx.fillRect(x, y, barW, pixH - 1)
+        p.draw = () => {
+          p.background(17)
+          const barW = Math.floor(p.width / BARS) - 2
+          const pixH = Math.floor(p.height / PIXELS_HIGH)
+          const values: number[] = []
+
+          if (analyser && dataArr && playingRef.current) {
+            analyser.getByteFrequencyData(dataArr)
+            for (let i = 0; i < BARS; i++) {
+              const idx = Math.floor((i / BARS) * dataArr.length)
+              values.push(dataArr[idx] / 255)
+            }
+          } else {
+            const t = p.millis() / 1000
+            for (let i = 0; i < BARS; i++) {
+              const v = playingRef.current
+                ? 0.25 + 0.35 * Math.sin(t * 1.2 + i * 0.5) * Math.sin(t * 0.7 + i * 0.3)
+                : 0.05 + 0.03 * Math.sin(t * 0.3 + i * 0.2)
+              values.push(p.constrain(v, 0, 1))
+            }
+          }
+
+          p.noStroke()
+          for (let i = 0; i < BARS; i++) {
+            const litPixels = Math.round(values[i] * PIXELS_HIGH)
+            const x = i * (barW + 2) + 1
+            for (let px = 0; px < litPixels; px++) {
+              const y = p.height - (px + 1) * pixH
+              const ratio = px / PIXELS_HIGH
+              const r = ratio > 0.7 ? 255 : Math.round(ratio * 2.5 * 255)
+              const g = ratio > 0.7 ? Math.round((1 - (ratio - 0.7) * 3.3) * 255) : 255
+              p.fill(r, g, 50)
+              p.rect(x, y, barW, pixH - 1)
+            }
+          }
         }
       }
 
-      animRef.current = requestAnimationFrame(draw)
-    }
+      p5Ref.current = new p5(sketch, containerRef.current!)
+    })
 
-    draw()
-    return () => cancelAnimationFrame(animRef.current)
-  }, [isPlaying])
+    return () => { p5Ref.current?.remove() }
+  }, [isWidget])
 
-  const size = isWidget ? 100 : 220
   return (
-    <div style={{ position: 'relative', zIndex: 2 }}>
-      <canvas
-        ref={canvasRef}
-        width={size}
-        height={size}
-        style={{
-          width: isWidget ? '100px' : '60vw',
-          maxWidth: '220px',
-          aspectRatio: '1 / 1',
-          borderRadius: '8px',
-          background: '#111',
-          imageRendering: 'pixelated',
-        }}
-      />
-    </div>
+    <div
+      ref={containerRef}
+      style={{
+        position: 'relative', zIndex: 2,
+        width: isWidget ? '100px' : '60vw',
+        maxWidth: '220px',
+        aspectRatio: '1 / 1',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        background: '#111',
+        imageRendering: 'pixelated',
+      }}
+    />
   )
 }
 
-// ── Lava Lamp ──
+// ── Lava Lamp (p5.js) ──
 function LavaLamp({ isPlaying, isWidget }: { isPlaying: boolean; isWidget: boolean }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const p5Ref = useRef<any>(null)
+  const playingRef = useRef(isPlaying)
+
+  useEffect(() => { playingRef.current = isPlaying }, [isPlaying])
+
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    // Read the theme accent color
+    const accentRaw = getComputedStyle(document.documentElement).getPropertyValue('--theme-accent').trim() || '#3DFF6A'
+
+    import('p5').then(({ default: p5 }) => {
+      const sketch = (p: any) => {
+        const size = isWidget ? 100 : 220
+        const blobs: { x: number; y: number; r: number; vx: number; vy: number; hueOff: number }[] = []
+        let accentH = 0, accentS = 0, accentB = 0
+        let pg: any // offscreen graphics for the goo effect
+
+        p.setup = () => {
+          p.createCanvas(size, size)
+          p.colorMode(p.HSB, 360, 100, 100, 100)
+          p.frameRate(30)
+
+          // Parse accent color
+          const c = p.color(accentRaw)
+          accentH = p.hue(c)
+          accentS = p.saturation(c)
+          accentB = p.brightness(c)
+
+          pg = p.createGraphics(size, size)
+          pg.colorMode(pg.HSB, 360, 100, 100, 100)
+
+          // Create blobs
+          for (let i = 0; i < 6; i++) {
+            blobs.push({
+              x: p.random(size * 0.2, size * 0.8),
+              y: p.random(size * 0.2, size * 0.8),
+              r: p.random(size * 0.15, size * 0.28),
+              vx: p.random(-0.5, 0.5),
+              vy: p.random(-0.5, 0.5),
+              hueOff: p.random(-40, 40),
+            })
+          }
+        }
+
+        p.draw = () => {
+          const speed = playingRef.current ? 1 : 0.25
+
+          // Move blobs
+          for (const b of blobs) {
+            b.x += b.vx * speed
+            b.y += b.vy * speed
+            // Bounce off edges with padding
+            const pad = b.r * 0.3
+            if (b.x < pad || b.x > size - pad) b.vx *= -1
+            if (b.y < pad || b.y > size - pad) b.vy *= -1
+            b.x = p.constrain(b.x, pad, size - pad)
+            b.y = p.constrain(b.y, pad, size - pad)
+            // Wobble radius
+            b.r += Math.sin(p.frameCount * 0.03 * speed + b.hueOff) * 0.3
+            b.r = p.constrain(b.r, size * 0.12, size * 0.32)
+          }
+
+          // Draw blobs to offscreen buffer with metaball-style rendering
+          pg.clear()
+          pg.noStroke()
+          for (const b of blobs) {
+            const h = (accentH + b.hueOff + 360) % 360
+            const s = p.constrain(accentS + 10, 0, 100)
+            const br = p.constrain(accentB, 40, 100)
+            // Draw layered circles for soft glow
+            for (let layer = 5; layer >= 0; layer--) {
+              const t = layer / 5
+              const radius = b.r * (1 + t * 0.6)
+              const alpha = (1 - t) * 40
+              pg.fill(h, s, br, alpha)
+              pg.ellipse(b.x, b.y, radius * 2, radius * 2)
+            }
+          }
+
+          // Apply circular mask and blur-like effect
+          p.background(0)
+          p.imageMode(p.CORNER)
+
+          // Draw the lava content
+          p.image(pg, 0, 0)
+
+          // Draw blurred overlay for goo merging effect
+          p.drawingContext.filter = 'blur(12px) saturate(1.5)'
+          p.image(pg, 0, 0)
+          p.drawingContext.filter = 'none'
+
+          // Circular mask
+          p.loadPixels()
+          const cx = size / 2
+          const cy = size / 2
+          const rad = size / 2
+          for (let y = 0; y < size; y++) {
+            for (let x = 0; x < size; x++) {
+              const d = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2)
+              if (d > rad) {
+                const idx = (y * size + x) * 4
+                p.pixels[idx + 3] = 0
+              } else if (d > rad - 2) {
+                const idx = (y * size + x) * 4
+                p.pixels[idx + 3] = Math.round(p.pixels[idx + 3] * (rad - d) / 2)
+              }
+            }
+          }
+          p.updatePixels()
+        }
+      }
+
+      p5Ref.current = new p5(sketch, containerRef.current!)
+    })
+
+    return () => { p5Ref.current?.remove() }
+  }, [isWidget])
+
   return (
-    <div style={{
-      position: 'relative', zIndex: 2,
-      width: isWidget ? '100px' : '60%', maxWidth: '220px', aspectRatio: '1 / 1',
-      borderRadius: '50%', overflow: 'hidden',
-      background: 'var(--theme-bg-secondary)',
-    }}>
-      <div style={{
-        position: 'absolute', inset: 0, borderRadius: '50%',
-        background: `
-          radial-gradient(circle at 30% 70%, color-mix(in hsl, var(--theme-accent), transparent 20%) 0%, transparent 50%),
-          radial-gradient(circle at 70% 30%, color-mix(in hsl, var(--theme-accent) 80%, #ff6b6b) 0%, transparent 50%),
-          radial-gradient(circle at 50% 50%, color-mix(in hsl, var(--theme-accent) 60%, #6b6bff) 0%, transparent 60%)
-        `,
-        animation: isPlaying ? 'lava-morph 8s ease-in-out infinite' : 'lava-morph 20s ease-in-out infinite',
-        filter: 'blur(20px) saturate(1.5)',
-      }} />
-      <div style={{
-        position: 'absolute', inset: 0, borderRadius: '50%',
-        background: `
-          radial-gradient(circle at 60% 20%, color-mix(in hsl, var(--theme-accent) 70%, #ffaa00) 0%, transparent 40%),
-          radial-gradient(circle at 20% 80%, color-mix(in hsl, var(--theme-accent) 50%, #aa00ff) 0%, transparent 45%)
-        `,
-        animation: isPlaying ? 'lava-morph2 6s ease-in-out infinite' : 'lava-morph2 16s ease-in-out infinite',
-        filter: 'blur(16px) saturate(1.3)',
-        opacity: 0.8,
-      }} />
-      <div style={{
-        position: 'absolute', inset: 0, borderRadius: '50%',
-        border: '1px solid rgba(255,255,255,0.08)',
-      }} />
-    </div>
+    <div
+      ref={containerRef}
+      style={{
+        position: 'relative', zIndex: 2,
+        width: isWidget ? '100px' : '60vw',
+        maxWidth: '220px',
+        aspectRatio: '1 / 1',
+        borderRadius: '50%',
+        overflow: 'hidden',
+      }}
+    />
   )
 }
 
